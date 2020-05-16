@@ -10,73 +10,41 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
-	"strings"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/tidwall/gjson"
 )
 
+type function func(MsgInfo *botstruct.MsgInfo)
+
 var cqsecret string = gjson.Get(cqfunction.ReadConfig(), "HttpAPIPosSecret").String()
 
-//Get audio number by regexp.
-func getAu(msg string) (au string) {
-	if strings.Contains(msg, "CQ:rich") {
-		return ""
-	}
-	reg, err := regexp.Compile("(?i)au[0-9]+")
-	if err != nil {
-		log.Fatalln(err)
-	}
-	str := strings.Join(reg.FindAllString(msg, 1), "")
-	return str
-}
+func judgeandrun(name string, function function, MsgInfo *botstruct.MsgInfo) {
+	config := gjson.Get(cqfunction.ReadConfig(), "Feature.0").String()
 
-//Handle meassage and send music card.
-func au2card(MsgInfo botstruct.MsgInfo) {
-	au := getAu(MsgInfo.Message)
-	if au != "" {
-		log.Println("Created request for", au, "from:", MsgInfo.SenderID)
-		Auinfo := biliau2card.GetAuInfo(au)
-
-		if !Auinfo.AuStatus {
-			msgMake := "AU" + Auinfo.AuNumber + Auinfo.AuMsg
-			log.Println(msgMake)
-			switch MsgInfo.MsgType {
-			case "private":
-				cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake)
-				break
-			case "group":
-				cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake)
-				break
-			}
-		} else {
-			cqCodeMake := "[CQ:music,type=custom,url=" + Auinfo.AuJumpURL + ",audio=" + Auinfo.AuURL + ",title=" + Auinfo.AuTitle + ",content=" + Auinfo.AuDesp + ",image=" + Auinfo.AuCoverURL + "@180w_180h]"
-			switch MsgInfo.MsgType {
-			case "private":
-				cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, cqCodeMake)
-				break
-			case "group":
-				cqfunction.CQSendGroupMsg(MsgInfo.GroupID, cqCodeMake)
-				break
-			}
-		}
-
+	if gjson.Get(config, name).Bool() {
+		function(MsgInfo)
 	} else {
 		log.Println("Ingore message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 	}
 }
 
-//handleMsg converts HTTP Post Body to MsgInfo Struct.
-func handleMsg(raw []byte) (MsgInfo botstruct.MsgInfo) {
-	MsgInfo.MsgType = gjson.GetBytes(raw, "message_type").String()
-	MsgInfo.GroupID = gjson.GetBytes(raw, "group_id").String()
-	MsgInfo.Message = gjson.GetBytes(raw, "message").String()
-	MsgInfo.SenderID = gjson.GetBytes(raw, "user_id").String()
-	return
+//MsgHandler converts HTTP Post Body to MsgInfo Struct.
+func MsgHandler(raw []byte) (MsgInfo *botstruct.MsgInfo) {
+	var mi = new(botstruct.MsgInfo)
+
+	mi.MsgType = gjson.GetBytes(raw, "message_type").String()
+	mi.GroupID = gjson.GetBytes(raw, "group_id").String()
+	mi.Message = gjson.GetBytes(raw, "message").String()
+	mi.SenderID = gjson.GetBytes(raw, "user_id").String()
+
+	return mi
 }
 
-//Handle request type before handling message.
-func handleHTTP(w http.ResponseWriter, r *http.Request) {
+//HTTPhandler : Handle request type before handling message.
+func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 	method := r.Method
 	if method != "POST" {
 		w.WriteHeader(400)
@@ -98,19 +66,34 @@ func handleHTTP(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(signature)
 			fmt.Println(hmac.Equal(mac1.Sum(nil), []byte(signature)))
 		*/
-		go au2card(handleMsg(body))
+		var msgInfoTmp = MsgHandler(body)
+		go judgeandrun("BiliAu2Card", biliau2card.Au2Card, msgInfoTmp)
 	}
+}
+
+func closeSignalHandler() {
+	channel := make(chan os.Signal, 2)
+	signal.Notify(channel, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-channel
+		log.Println("Program stop.")
+		os.Exit(0)
+	}()
 }
 
 func main() {
 	config := cqfunction.ReadConfig()
 	log.SetPrefix("SMLKBOT: ")
-	path := gjson.Get(config, "BiliAu2Card.0.ListeningPath").String()
-	port := gjson.Get(config, "BiliAu2Card.0.ListeningPort").String()
+	closeSignalHandler()
+
+	path := gjson.Get(config, "CoolQ.0.HTTPServer.ListeningPath").String()
+	port := gjson.Get(config, "CoolQ.0.HTTPServer.ListeningPort").String()
+
 	log.Println("Powered by Ink33")
 	log.Println("Start listening", path, port)
 
-	http.HandleFunc(path, handleHTTP)
+	http.HandleFunc(path, HTTPhandler)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatal("ListenAndServe", err)

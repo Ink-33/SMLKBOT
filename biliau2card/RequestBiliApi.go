@@ -15,27 +15,28 @@ const biliAudioPlayURL string = "https://api.bilibili.com/audio/music-service-c/
 const biliAudioJumpURL string = "https://www.bilibili.com/audio/au"
 
 //GetAuInfo : Get Bilibili Audio info
-func GetAuInfo(au string) (Auinfo botstruct.Auinfo) {
+func GetAuInfo(au string) (Auinfo *botstruct.Auinfo) {
+	var ai = new(botstruct.Auinfo)
 	reg, err := regexp.Compile("[0-9]+")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	Auinfo.AuNumber = strings.Join(reg.FindAllString(au, 1), "")
-	Auinfo.AuURL = biliAudioPlayURL + Auinfo.AuNumber
-	Auinfo.AuJumpURL = biliAudioJumpURL + Auinfo.AuNumber
+	ai.AuNumber = strings.Join(reg.FindAllString(au, 1), "")
+	ai.AuURL = biliAudioPlayURL + ai.AuNumber
+	ai.AuJumpURL = biliAudioJumpURL + ai.AuNumber
 
-	requestAddr := biliAuAPIAddr + Auinfo.AuNumber
+	requestAddr := biliAuAPIAddr + ai.AuNumber
 	body := string(cqfunction.GetWbeContent(requestAddr)[:])
 
-	Auinfo.AuMsg = gjson.Get(body, "msg").String()
-	if Auinfo.AuMsg != "success" {
-		Auinfo.AuStatus = false
-		return
+	ai.AuMsg = gjson.Get(body, "msg").String()
+	if ai.AuMsg != "success" {
+		ai.AuStatus = false
+		return ai
 	}
-	Auinfo.AuStatus = true
-	Auinfo.AuCoverURL = gjson.Get(body, "data.h5Songs.cover_url").String()
-	Auinfo.AuTitle = gjson.Get(body, "data.h5Songs.title").String()
-	Auinfo.AuDesp = gjson.Get(body, "data.h5Songs.author").String()
-	return
+	ai.AuStatus = true
+	ai.AuCoverURL = gjson.Get(body, "data.h5Songs.cover_url").String()
+	ai.AuTitle = gjson.Get(body, "data.h5Songs.title").String()
+	ai.AuDesp = gjson.Get(body, "data.h5Songs.author").String()
+	return ai
 }

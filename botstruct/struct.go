@@ -19,3 +19,4 @@ type Auinfo struct {
 	AuTitle    string
 	AuDesp     string
 }
+
