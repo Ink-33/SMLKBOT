@@ -32,7 +32,7 @@ func Au2Card(MsgInfo *botstruct.MsgInfo) {
 		Auinfo := GetAuInfo(au)
 
 		if !Auinfo.AuStatus {
-			msgMake := "AU" + Auinfo.AuNumber + Auinfo.AuMsg
+			msgMake := "BiliAu2Card: AU" + Auinfo.AuNumber + Auinfo.AuMsg
 			log.Println(msgMake)
 			switch MsgInfo.MsgType {
 			case "private":
