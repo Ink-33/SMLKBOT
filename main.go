@@ -17,15 +17,19 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type function func(MsgInfo *botstruct.MsgInfo)
+type function func(MsgInfo *botstruct.MsgInfo ,BotConfig *botstruct.BotConfig)
 
-var cqsecret string = gjson.Get(cqfunction.ReadConfig(), "HttpAPIPosSecret").String()
+var configfile string = cqfunction.ReadConfig()
+var cqsecret string = gjson.Get(configfile, "HTTPAPIPostSecret").String()
 
 func judgeandrun(name string, function function, MsgInfo *botstruct.MsgInfo) {
-	config := gjson.Get(cqfunction.ReadConfig(), "Feature.0").String()
+	var bc = new(botstruct.BotConfig)
+	bc.HTTPAPIAddr = gjson.Get(configfile, "CoolQ.0.Api.HTTPAPIAddr").String()
+	bc.HTTPAPIToken = gjson.Get(configfile, "CoolQ.0.Api.HTTPAPIToken").String()
+	config := gjson.Get(configfile, "Feature.0").String()
 
 	if gjson.Get(config, name).Bool() {
-		function(MsgInfo)
+		go function(MsgInfo,bc)
 	} else {
 		log.Println("Ingore message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 	}
@@ -83,12 +87,11 @@ func closeSignalHandler() {
 }
 
 func main() {
-	config := cqfunction.ReadConfig()
 	log.SetPrefix("SMLKBOT: ")
 	closeSignalHandler()
 
-	path := gjson.Get(config, "CoolQ.0.HTTPServer.ListeningPath").String()
-	port := gjson.Get(config, "CoolQ.0.HTTPServer.ListeningPort").String()
+	path := gjson.Get(configfile, "CoolQ.0.HTTPServer.ListeningPath").String()
+	port := gjson.Get(configfile, "CoolQ.0.HTTPServer.ListeningPort").String()
 
 	log.Println("Powered by Ink33")
 	log.Println("Start listening", path, port)

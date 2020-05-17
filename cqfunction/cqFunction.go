@@ -1,28 +1,23 @@
 package cqfunction
 
 import (
+	"SMLKBOT/botstruct"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-
-	"github.com/tidwall/gjson"
 )
 
-//CQSendGroupMsg : Send Group message by using CoolQ HttpAPI
-func CQSendGroupMsg(id, msg string) {
-	conf := ReadConfig()
-	cqAddr := gjson.Get(conf, "CoolQ.0.Api.HttpAPIAddr").String()
-	cqToken := gjson.Get(conf, "CoolQ.0.Api.HttpAPIToken").String()
-	GetWbeContent(cqAddr + "/send_group_msg?access_token=" + cqToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
+//CQSendGroupMsg : Send Group message by using CoolQ HTTPAPI
+func CQSendGroupMsg(id, msg string, BotConfig *botstruct.BotConfig) {
+	//log.Println(BotConfig.HTTPAPIAddr + "/send_group_msg?access_token=" + BotConfig.HTTPAPIToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
+	GetWbeContent(BotConfig.HTTPAPIAddr + "/send_group_msg?access_token=" + BotConfig.HTTPAPIToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
 }
 
-//CQSendPrivateMsg : Send private message by using CoolQ HttpAPI
-func CQSendPrivateMsg(id, msg string) {
-	conf := ReadConfig()
-	cqAddr := gjson.Get(conf, "CoolQ.0.Api.HttpAPIAddr").String()
-	cqToken := gjson.Get(conf, "CoolQ.0.Api.HttpAPIToken").String()
-	GetWbeContent(cqAddr + "/send_private_msg?access_token=" + cqToken + "&user_id=" + id + "&message=" + url.QueryEscape(msg))
+//CQSendPrivateMsg : Send private message by using CoolQ HTTPAPI
+func CQSendPrivateMsg(id, msg string, BotConfig *botstruct.BotConfig) {
+	//log.Println(BotConfig.HTTPAPIAddr + "/send_private_msg?access_token=" + BotConfig.HTTPAPIToken + "&user_id=" + id + "&message=" + url.QueryEscape(msg))
+	GetWbeContent(BotConfig.HTTPAPIAddr + "/send_private_msg?access_token=" + BotConfig.HTTPAPIToken + "&user_id=" + id + "&message=" + url.QueryEscape(msg))
 }
 
 //GetWbeContent : Get web Content by using GET request.

@@ -19,4 +19,9 @@ type Auinfo struct {
 	AuTitle    string
 	AuDesp     string
 }
-
+//BotConfig includes CQHTTPAPI config.
+type BotConfig struct{
+	HTTPAPIAddr string
+	HTTPAPIToken string
+	HTTPAPIPostSecret string
+}

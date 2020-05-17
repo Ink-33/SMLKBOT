@@ -24,7 +24,7 @@ func GetAu(msg string) (au string) {
 }
 
 // Au2Card : Handle meassage and send music card.
-func Au2Card(MsgInfo *botstruct.MsgInfo) {
+func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	au := GetAu(MsgInfo.Message)
 
 	if au != "" {
@@ -36,20 +36,20 @@ func Au2Card(MsgInfo *botstruct.MsgInfo) {
 			log.Println(msgMake)
 			switch MsgInfo.MsgType {
 			case "private":
-				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake)
+				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
 				break
 			case "group":
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake)
+				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
 				break
 			}
 		} else {
 			cqCodeMake := "[CQ:music,type=custom,url=" + Auinfo.AuJumpURL + ",audio=" + Auinfo.AuURL + ",title=" + Auinfo.AuTitle + ",content=" + Auinfo.AuDesp + ",image=" + Auinfo.AuCoverURL + "@180w_180h]"
 			switch MsgInfo.MsgType {
 			case "private":
-				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, cqCodeMake)
+				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, cqCodeMake, BotConfig)
 				break
 			case "group":
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, cqCodeMake)
+				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, cqCodeMake, BotConfig)
 				break
 			}
 		}
