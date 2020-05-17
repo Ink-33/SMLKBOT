@@ -27,7 +27,7 @@ func GetAuInfo(au string) (Auinfo *botstruct.Auinfo) {
 	ai.AuJumpURL = biliAudioJumpURL + ai.AuNumber
 
 	requestAddr := biliAuAPIAddr + ai.AuNumber
-	body := string(cqfunction.GetWbeContent(requestAddr)[:])
+	body := string(cqfunction.GetWebContent(requestAddr)[:])
 
 	ai.AuMsg = gjson.Get(body, "msg").String()
 	if ai.AuMsg != "success" {

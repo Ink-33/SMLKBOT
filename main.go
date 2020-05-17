@@ -4,6 +4,7 @@ import (
 	"SMLKBOT/biliau2card"
 	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
+	_ "SMLKBOT/vtbmusic"
 	_ "crypto/hmac"
 	_ "crypto/sha1"
 	"fmt"
@@ -17,7 +18,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type function func(MsgInfo *botstruct.MsgInfo ,BotConfig *botstruct.BotConfig)
+type function func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig)
 
 var configfile string = cqfunction.ReadConfig()
 var cqsecret string = gjson.Get(configfile, "HTTPAPIPostSecret").String()
@@ -29,7 +30,7 @@ func judgeandrun(name string, function function, MsgInfo *botstruct.MsgInfo) {
 	config := gjson.Get(configfile, "Feature.0").String()
 
 	if gjson.Get(config, name).Bool() {
-		go function(MsgInfo,bc)
+		go function(MsgInfo, bc)
 	} else {
 		log.Println("Ingore message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 	}
@@ -88,6 +89,7 @@ func closeSignalHandler() {
 
 func main() {
 	log.SetPrefix("SMLKBOT: ")
+	//vtbmusic.T()
 	closeSignalHandler()
 
 	path := gjson.Get(configfile, "CoolQ.0.HTTPServer.ListeningPath").String()
