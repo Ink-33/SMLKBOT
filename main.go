@@ -4,7 +4,7 @@ import (
 	"SMLKBOT/biliau2card"
 	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
-	_ "SMLKBOT/vtbmusic"
+	"SMLKBOT/vtbmusic"
 	_ "crypto/hmac"
 	_ "crypto/sha1"
 	"fmt"
@@ -39,7 +39,6 @@ func judgeandrun(name string, function function, MsgInfo *botstruct.MsgInfo) {
 //MsgHandler converts HTTP Post Body to MsgInfo Struct.
 func MsgHandler(raw []byte) (MsgInfo *botstruct.MsgInfo) {
 	var mi = new(botstruct.MsgInfo)
-
 	mi.MsgType = gjson.GetBytes(raw, "message_type").String()
 	mi.GroupID = gjson.GetBytes(raw, "group_id").String()
 	mi.Message = gjson.GetBytes(raw, "message").String()
@@ -73,6 +72,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		*/
 		var msgInfoTmp = MsgHandler(body)
 		go judgeandrun("BiliAu2Card", biliau2card.Au2Card, msgInfoTmp)
+		go judgeandrun("VTBMusic", vtbmusic.VTBMusic, msgInfoTmp)
 	}
 }
 
@@ -89,7 +89,6 @@ func closeSignalHandler() {
 
 func main() {
 	log.SetPrefix("SMLKBOT: ")
-	//vtbmusic.T()
 	closeSignalHandler()
 
 	path := gjson.Get(configfile, "CoolQ.0.HTTPServer.ListeningPath").String()

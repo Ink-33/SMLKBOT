@@ -1,5 +1,9 @@
 package botstruct
 
+import (
+	"github.com/tidwall/gjson"
+)
+
 //MsgInfo includes some basic info about a message.
 type MsgInfo struct {
 	SenderID string
@@ -19,9 +23,26 @@ type Auinfo struct {
 	AuTitle    string
 	AuDesp     string
 }
+
 //BotConfig includes CQHTTPAPI config.
-type BotConfig struct{
-	HTTPAPIAddr string
-	HTTPAPIToken string
+type BotConfig struct {
+	HTTPAPIAddr       string
+	HTTPAPIToken      string
 	HTTPAPIPostSecret string
+}
+
+//VTBMusicInfo includes the info of a music.
+type VTBMusicInfo struct {
+	MusicName  string
+	MusicID    string
+	MusicVocal string
+	Cover      string
+	MusicURL   string
+	MusicCDN   string
+}
+
+//VTBMusicList includes the search result.
+type VTBMusicList struct {
+	Total int64
+	Data  []gjson.Result
 }

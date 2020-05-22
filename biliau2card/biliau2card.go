@@ -54,6 +54,6 @@ func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			}
 		}
 	} else {
-		log.Println("Ingore message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
+		log.Println("BiliAu2Card: Ingore message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 	}
 }
