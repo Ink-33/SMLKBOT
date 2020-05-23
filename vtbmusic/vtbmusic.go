@@ -14,7 +14,7 @@ type msgtype struct {
 	ctype   int
 }
 
-var waiting = make(chan *waitingChan, 2147483647)
+var waiting = make(chan *waitingChan, 10000)
 
 type waitingChan struct {
 	botstruct.MsgInfo
@@ -47,9 +47,11 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		}
 		break
 	case 2:
-		wc := new(waitingChan)
-		wc.MsgInfo = *MsgInfo
-		waiting <- wc
+		if !strings.Contains(MsgInfo.Message, " ") {
+			wc := new(waitingChan)
+			wc.MsgInfo = *MsgInfo
+			waiting <- wc
+		}
 	}
 }
 
@@ -66,12 +68,15 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 		mt.content = strings.Replace(msg, "vtb点歌", "", 1)
 		mt.ctype = 1
 	} else {
-		reg, err := regexp.Compile("^[\\d]+$")
+		reg, err := regexp.Compile("^[0-9]+$")
 		if err != nil {
 			log.Fatalln(err)
 		}
 		mt.content = strings.Join(reg.FindAllString(msg, 1), "")
-		mt.ctype = 2
+		if mt.content != "" {
+			mt.ctype = 2
+			return mt
+		}
 		return mt
 	}
 	return mt
@@ -127,15 +132,16 @@ func getMusicDetail(list *botstruct.VTBMusicList, index int) (info *botstruct.VT
 	i.MusicID = list.Data[index-1].Get("Id").String()
 	i.MusicVocal = list.Data[index-1].Get("vocal").String()
 	i.MusicName = list.Data[index-1].Get("name").String()
-	if i.MusicCDN == "11:12:13" {
-		i.MusicCDN = "11:12:13"
-		i.Cover = "https://santiego.gitee.io/vtb-music-source-img/img/" + list.Data[index-1].Get("img").String()
-		i.MusicURL = "https://santiego.gitee.io/vtb-music-source-song/song/" + list.Data[index-1].Get("music").String()
+	if strings.Contains(list.Data[index-1].Get("CDN").String(), ":") {
+		reg := regexp.MustCompile("(\\d+):(\\d+):(\\d+)")
+		match := reg.FindStringSubmatch(list.Data[index-1].Get("CDN").String())
+		log.Println(match)
+		i.Cover = GetVTBMusicCDN(match[1]) + list.Data[index-1].Get("img").String()
+		i.MusicURL = GetVTBMusicCDN(match[2]) + list.Data[index-1].Get("music").String()
 	} else {
 		i.MusicCDN = GetVTBMusicCDN(list.Data[index-1].Get("CDN").String())
 		i.Cover = i.MusicCDN + list.Data[index-1].Get("img").String()
 		i.MusicURL = i.MusicCDN + list.Data[index-1].Get("music").String()
 	}
-
 	return i
 }
