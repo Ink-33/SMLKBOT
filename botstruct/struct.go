@@ -6,10 +6,11 @@ import (
 
 //MsgInfo includes some basic info about a message.
 type MsgInfo struct {
-	SenderID string
-	GroupID  string
-	Message  string
-	MsgType  string
+	TimeStamp int64
+	SenderID  string
+	GroupID   string
+	Message   string
+	MsgType   string
 }
 
 //Auinfo includes some basic info of a Au number.
@@ -46,3 +47,4 @@ type VTBMusicList struct {
 	Total int64
 	Data  []gjson.Result
 }
+

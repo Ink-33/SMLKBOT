@@ -28,17 +28,16 @@ func judgeandrun(name string, function function, MsgInfo *botstruct.MsgInfo) {
 	bc.HTTPAPIAddr = gjson.Get(configfile, "CoolQ.0.Api.HTTPAPIAddr").String()
 	bc.HTTPAPIToken = gjson.Get(configfile, "CoolQ.0.Api.HTTPAPIToken").String()
 	config := gjson.Get(configfile, "Feature.0").String()
-
+	log.Println("Received message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 	if gjson.Get(config, name).Bool() {
 		go function(MsgInfo, bc)
-	} else {
-		log.Println("Ingore message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 	}
 }
 
 //MsgHandler converts HTTP Post Body to MsgInfo Struct.
 func MsgHandler(raw []byte) (MsgInfo *botstruct.MsgInfo) {
 	var mi = new(botstruct.MsgInfo)
+	mi.TimeStamp = gjson.GetBytes(raw, "time").Int()
 	mi.MsgType = gjson.GetBytes(raw, "message_type").String()
 	mi.GroupID = gjson.GetBytes(raw, "group_id").String()
 	mi.Message = gjson.GetBytes(raw, "message").String()
@@ -90,7 +89,6 @@ func closeSignalHandler() {
 func main() {
 	log.SetPrefix("SMLKBOT: ")
 	closeSignalHandler()
-
 	path := gjson.Get(configfile, "CoolQ.0.HTTPServer.ListeningPath").String()
 	port := gjson.Get(configfile, "CoolQ.0.HTTPServer.ListeningPort").String()
 

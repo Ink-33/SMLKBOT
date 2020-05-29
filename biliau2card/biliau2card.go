@@ -28,12 +28,12 @@ func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	au := GetAu(MsgInfo.Message)
 
 	if au != "" {
+		log.SetPrefix("BiliAu2Card")
 		log.Println("Created request for", au, "from:", MsgInfo.SenderID)
 		Auinfo := GetAuInfo(au)
 
 		if !Auinfo.AuStatus {
 			msgMake := "BiliAu2Card: AU" + Auinfo.AuNumber + Auinfo.AuMsg
-			log.Println(msgMake)
 			switch MsgInfo.MsgType {
 			case "private":
 				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
@@ -53,7 +53,5 @@ func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 				break
 			}
 		}
-	} else {
-		log.Println("BiliAu2Card: Ingore message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 	}
 }

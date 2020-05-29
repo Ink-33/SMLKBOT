@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type msgtype struct {
@@ -14,19 +15,22 @@ type msgtype struct {
 	ctype   int
 }
 
-var waiting = make(chan *waitingChan, 10000)
+var waiting = make(chan *waitingChan, 500)
+var counter int = 0
 
 type waitingChan struct {
 	botstruct.MsgInfo
+	isTimeOut bool
 }
 
 //VTBMusic : The main function of VTBMusic
 func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	mt := msgHandler(MsgInfo.Message)
+	log.SetPrefix("VTBMusic")
+	log.Println("Created request for", mt.content, "from:", MsgInfo.SenderID)
 	ctype := mt.ctype
 	switch ctype {
 	case 0:
-		log.Println("vtbmusic: Ingore message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 		break
 	case 1:
 		list := GetVTBMusicList(mt.content)
@@ -35,6 +39,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》没有在VtbMusic上找到结果，请更换关键词重试"
 		} else {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n发送歌曲对应序号即可播放"
+			counter++
 			go waitingFunc(list, MsgInfo, BotConfig)
 		}
 		switch MsgInfo.MsgType {
@@ -47,9 +52,10 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		}
 		break
 	case 2:
-		if !strings.Contains(MsgInfo.Message, " ") {
+		if counter != 0 {
 			wc := new(waitingChan)
 			wc.MsgInfo = *MsgInfo
+			wc.isTimeOut = false
 			waiting <- wc
 		}
 	}
@@ -95,28 +101,38 @@ func listtoMsg(list *botstruct.VTBMusicList) string {
 }
 
 func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
+	go func(MsgInfo *botstruct.MsgInfo) {
+		time.Sleep(30 * time.Second)
+		wc := new(waitingChan)
+		wc.MsgInfo = *MsgInfo
+		wc.isTimeOut = true
+		waiting <- wc
+	}(MsgInfo)
 	for {
-		//log.Println("123123123")
 		c := <-waiting
+		if c.isTimeOut {
+			counter--
+			break
+		}
 		index, err := strconv.Atoi(c.Message)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		if int64(index) <= list.Total && int64(index) > 0 {
+		if int64(index) <= list.Total && int64(index) > 0 && c.TimeStamp >= MsgInfo.TimeStamp {
 			if c.SenderID == MsgInfo.SenderID && c.MsgType == MsgInfo.MsgType {
 				switch c.MsgType {
 				case "private":
 					info := getMusicDetail(list, index)
 					cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
-					//log.Println(cqCodeMake)
+					counter--
 					go cqfunction.CQSendPrivateMsg(c.SenderID, cqCodeMake, BotConfig)
 					break
 				case "group":
 					if c.GroupID == MsgInfo.GroupID {
-
 						info := getMusicDetail(list, index)
 						cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
 						go cqfunction.CQSendGroupMsg(c.GroupID, cqCodeMake, BotConfig)
+						counter--
 						break
 					}
 				}
@@ -135,7 +151,6 @@ func getMusicDetail(list *botstruct.VTBMusicList, index int) (info *botstruct.VT
 	if strings.Contains(list.Data[index-1].Get("CDN").String(), ":") {
 		reg := regexp.MustCompile("(\\d+):(\\d+):(\\d+)")
 		match := reg.FindStringSubmatch(list.Data[index-1].Get("CDN").String())
-		log.Println(match)
 		i.Cover = GetVTBMusicCDN(match[1]) + list.Data[index-1].Get("img").String()
 		i.MusicURL = GetVTBMusicCDN(match[2]) + list.Data[index-1].Get("music").String()
 	} else {
