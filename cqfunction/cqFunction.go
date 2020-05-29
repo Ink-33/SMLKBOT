@@ -1,17 +1,17 @@
 package cqfunction
 
 import (
-	"strings"
 	"SMLKBOT/botstruct"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 //CQSendGroupMsg : Send Group message by using CoolQ HTTPAPI
 func CQSendGroupMsg(id, msg string, BotConfig *botstruct.BotConfig) {
-	//log.Println(BotConfig.HTTPAPIAddr + "/send_group_msg?access_token=" + BotConfig.HTTPAPIToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
+	//log.Println("cqFunctionGroup" + BotConfig.HTTPAPIAddr + "/send_group_msg?access_token=" + BotConfig.HTTPAPIToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
 	GetWebContent(BotConfig.HTTPAPIAddr + "/send_group_msg?access_token=" + BotConfig.HTTPAPIToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
 }
 

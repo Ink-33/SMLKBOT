@@ -133,8 +133,8 @@ func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotCo
 					if c.GroupID == MsgInfo.GroupID {
 						info := getMusicDetail(list, index)
 						cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
-						go cqfunction.CQSendGroupMsg(c.GroupID, cqCodeMake, BotConfig)
 						counter--
+						go cqfunction.CQSendGroupMsg(c.GroupID, cqCodeMake, BotConfig)
 						break
 					}
 				}
