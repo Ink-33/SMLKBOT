@@ -26,13 +26,13 @@ type waitingChan struct {
 //VTBMusic : The main function of VTBMusic
 func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	mt := msgHandler(MsgInfo.Message)
-	log.SetPrefix("VTBMusic")
-	log.Println("Created request for", mt.content, "from:", MsgInfo.SenderID)
 	ctype := mt.ctype
 	switch ctype {
 	case 0:
 		break
 	case 1:
+		log.SetPrefix("VTBMusic: ")
+		log.Println("Created request for", mt.content, "from:", MsgInfo.SenderID)
 		list := GetVTBMusicList(mt.content)
 		var msgMake string
 		if list.Total == 0 {
@@ -52,6 +52,8 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		}
 		break
 	case 2:
+		log.SetPrefix("VTBMusic: ")
+		log.Println("Created request for", mt.content, "from:", MsgInfo.SenderID)
 		if counter != 0 {
 			wc := new(waitingChan)
 			wc.MsgInfo = *MsgInfo

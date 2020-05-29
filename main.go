@@ -28,7 +28,6 @@ func judgeandrun(name string, function function, MsgInfo *botstruct.MsgInfo) {
 	bc.HTTPAPIAddr = gjson.Get(configfile, "CoolQ.0.Api.HTTPAPIAddr").String()
 	bc.HTTPAPIToken = gjson.Get(configfile, "CoolQ.0.Api.HTTPAPIToken").String()
 	config := gjson.Get(configfile, "Feature.0").String()
-	log.Println("Received message:", MsgInfo.Message, "from:", MsgInfo.SenderID)
 	if gjson.Get(config, name).Bool() {
 		go function(MsgInfo, bc)
 	}
@@ -70,6 +69,8 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(hmac.Equal(mac1.Sum(nil), []byte(signature)))
 		*/
 		var msgInfoTmp = MsgHandler(body)
+		log.SetPrefix("SMLKBOT: ")
+		log.Println("Received message:", msgInfoTmp.Message, "from:", msgInfoTmp.SenderID)
 		go judgeandrun("BiliAu2Card", biliau2card.Au2Card, msgInfoTmp)
 		go judgeandrun("VTBMusic", vtbmusic.VTBMusic, msgInfoTmp)
 	}
