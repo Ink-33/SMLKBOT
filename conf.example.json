@@ -1,0 +1,21 @@
+{
+    "CoolQ": [
+        {
+            "Api": {
+                "HTTPAPIAddr": "",
+                "HTTPAPIToken": "",
+                "HTTPAPIPostSecret": ""
+            },
+            "HTTPServer": {
+                "ListeningPath": "/api/cqmsg",
+                "ListeningPort": 12345
+            }
+        }
+    ],
+    "Feature": [
+        {
+            "BiliAu2Card": true,
+            "VTBMusic":true
+        }
+    ]
+}
