@@ -19,9 +19,14 @@ type msgtype struct {
 var waiting = make(chan *waitingChan, 500)
 var counter int = 0
 
+type newRequest struct {
+	isNewRequest    bool
+	RequestSenderID string
+}
 type waitingChan struct {
 	botstruct.MsgInfo
 	isTimeOut bool
+	newRequest
 }
 
 //VTBMusic : The main function of VTBMusic
@@ -33,7 +38,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		break
 	case 1:
 		log.SetPrefix("VTBMusic: ")
-		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
+		log.Println("Known command:", mt.content)
 		list := GetVTBMusicList(mt.content)
 		var msgMake string
 		if list.Total == 0 {
@@ -41,6 +46,12 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		} else {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n发送歌曲对应序号即可播放"
 			counter++
+			w := new(waitingChan)
+			w.isNewRequest = true
+			w.RequestSenderID = MsgInfo.SenderID
+			w.MsgInfo = *MsgInfo
+			w.isTimeOut = false
+			waiting <- w
 			go waitingFunc(list, MsgInfo, BotConfig)
 		}
 		switch MsgInfo.MsgType {
@@ -61,7 +72,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		break
 	case 2:
 		log.SetPrefix("VTBMusic: ")
-		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
+		log.Println("Known command:", mt.content)
 		if counter != 0 {
 			wc := new(waitingChan)
 			wc.MsgInfo = *MsgInfo
@@ -71,7 +82,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		break
 	case 3:
 		log.SetPrefix("VTBMusic: ")
-		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
+		log.Println("Known command:", mt.content)
 		list := GetVTBVocalList(mt.content)
 		var msgMake string
 		if list.Total == 0 {
@@ -79,6 +90,12 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		} else {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n发送歌曲对应序号即可播放"
 			counter++
+			w := new(waitingChan)
+			w.isNewRequest = true
+			w.RequestSenderID = MsgInfo.SenderID
+			w.MsgInfo = *MsgInfo
+			w.isTimeOut = false
+			waiting <- w
 			go waitingFunc(list, MsgInfo, BotConfig)
 		}
 		switch MsgInfo.MsgType {
@@ -99,7 +116,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		break
 	case 4:
 		log.SetPrefix("VTBMusic: ")
-		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
+		log.Println("Known command:", mt.content)
 		list := GetVTBMusicDetail(mt.content)
 		var msgMake string
 		if list.Total == 0 {
@@ -119,7 +136,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		break
 	case 5:
 		log.SetPrefix("VTBMusic: ")
-		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
+		log.Println("Known command:", mt.content)
 		switch MsgInfo.MsgType {
 		case "private":
 			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, help.VTBMusic, BotConfig)
@@ -146,10 +163,7 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 		mt.ctype = 1
 		return mt
 	}
-	reg, err := regexp.Compile("^[0-9]+$")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	reg := regexp.MustCompile("^[0-9]+$")
 	mt.content = strings.Join(reg.FindAllString(msg, 1), "")
 	if mt.content != "" {
 		mt.ctype = 2
@@ -196,10 +210,14 @@ func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotCo
 	}(MsgInfo)
 	for {
 		c := <-waiting
+		if c.isNewRequest && c.RequestSenderID == MsgInfo.SenderID && c.MD5 != MsgInfo.MD5 {
+			counter--
+			break
+		}
 		if c.isTimeOut && c.MD5 == MsgInfo.MD5 {
 			counter--
 			break
-		} else if c.TimeStamp > MsgInfo.TimeStamp {
+		} else if c.TimeStamp > MsgInfo.TimeStamp && isNumber(c.Message) {
 			index, err := strconv.Atoi(c.Message)
 			if err != nil {
 				log.Fatalln(err)
@@ -232,7 +250,7 @@ func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotCo
 func getMusicDetail(list *botstruct.VTBMusicList, index int) (info *botstruct.VTBMusicInfo) {
 	i := new(botstruct.VTBMusicInfo)
 	i.MusicID = list.Data[index-1].Get("Id").String()
-	i.MusicVocal = list.Data[index-1].Get("vocal").String()
+	i.MusicVocal = strings.ReplaceAll(list.Data[index-1].Get("vocal").String(), ",", "、")
 	i.MusicName = list.Data[index-1].Get("name").String()
 	if strings.Contains(list.Data[index-1].Get("CDN").String(), ":") {
 		reg := regexp.MustCompile("(\\d+):(\\d+):(\\d+)")
@@ -245,4 +263,15 @@ func getMusicDetail(list *botstruct.VTBMusicList, index int) (info *botstruct.VT
 		i.MusicURL = i.MusicCDN + list.Data[index-1].Get("music").String()
 	}
 	return i
+}
+
+func isNumber(str string) bool {
+	var result bool = false
+	reg := regexp.MustCompile("^[0-9]+$")
+	tmp := strings.Join(reg.FindAllString(str, 1), "")
+	if tmp != "" {
+		result = true
+		return result
+	}
+	return result
 }

@@ -10,7 +10,7 @@ import (
 
 //GetAu : Get audio number by regexp.
 func GetAu(msg string) (au string) {
-	if strings.Contains(msg, "CQ:rich") {
+	if strings.Contains(msg, "CQ:") {
 		return ""
 	}
 
@@ -29,7 +29,7 @@ func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 
 	if au != "" {
 		log.SetPrefix("BiliAu2Card: ")
-		log.Println("Known command:", au, "from:", MsgInfo.SenderID)
+		log.Println("Known command:", au)
 		Auinfo := GetAuInfo(au)
 
 		if !Auinfo.AuStatus {
