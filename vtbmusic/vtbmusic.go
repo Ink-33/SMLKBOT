@@ -153,7 +153,7 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 	mt := new(msgtype)
 	mt.content = ""
 	mt.ctype = 0
-	if strings.Contains(msg, "CQ:rich") {
+	if strings.Contains(msg, "CQ:") {
 		mt.content = ""
 		mt.ctype = 0
 		return mt
