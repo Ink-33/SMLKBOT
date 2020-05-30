@@ -9,7 +9,7 @@
         },
         "HTTPServer": {
             "ListeningPath": "/api/cqmsg",
-            "ListeningPort": 65122
+            "ListeningPort": 12345
         }
     },
     "Feature": [
