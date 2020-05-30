@@ -20,7 +20,7 @@ func GetVTBMusicList(musicname string) (VTBMusicList *botstruct.VTBMusicList) {
 	s := make(map[string]string)
 	s["condition"] = "name"
 	s["keyword"] = musicname
-	postjson := vtbPOSTJson{
+	postjson := vtbPOSTJSON{
 		Search:    s,
 		PageIndex: 1,
 		PageRows:  9999,
@@ -43,7 +43,7 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 	s := make(map[string]string)
 	s["condition"] = "name"
 	s["keyword"] = keyword
-	postjson := vtbCDNJson{
+	postjson := vtbCDNJSON{
 		Search:    s,
 		PageIndex: 1,
 		PageRows:  9999,
@@ -56,30 +56,78 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 	//log.Println(string(p))
 	result := cqfunction.WebPostJSONContent(vtbMusicCDNDetailAPIAddr, string(p))
 	//log.Println(string(result))
-	if gjson.GetBytes(result, "Data").IsArray() && len(gjson.GetBytes(result, "Data").Array()) != 0 {
+	if gjson.GetBytes(result, "Data").Value() != nil {
 		var addr string
-		for _,r:= range gjson.GetBytes(result, "Data").Array() {
-			if r.Get("name").String() == keyword{
+		for _, r := range gjson.GetBytes(result, "Data").Array() {
+			if r.Get("name").String() == keyword {
 				addr = r.Get("url").String()
 				return addr
 			}
 		}
-		
 	}
 	return ""
 }
 
-type vtbCDNJson struct {
+//GetVTBVocalList : Get VTB Detail Info.
+func GetVTBVocalList(vocalname string) (VTBMusicList *botstruct.VTBMusicList) {
+	ml := new(botstruct.VTBMusicList)
+	s := make(map[string]string)
+	s["condition"] = "vocal"
+	s["keyword"] = vocalname
+	postjson := vtbPOSTJSON{
+		Search:    s,
+		PageIndex: 1,
+		PageRows:  9999,
+	}
+
+	p, err := json.Marshal(postjson)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	result := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
+	ml.Total = gjson.GetBytes(result, "Total").Int()
+	ml.Data = gjson.GetBytes(result, "Data").Array()
+	return ml
+}
+
+//GetVTBMusicDetail : Get music info by using music id.
+func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *botstruct.VTBMusicList) {
+	ml := new(botstruct.VTBMusicList)
+	postjson := vtbDetailJSON{
+		MusicID: VTBMusicID,
+	}
+	p, err := json.Marshal(postjson)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	result := cqfunction.WebPostJSONContent(vtbMusicDetailAPIAddr, string(p))
+	if gjson.GetBytes(result, "Data").Value() != nil {
+		gr := make([]gjson.Result, 1)
+		gr[0] = gjson.GetBytes(result, "Data|@this")
+		ml.Data = gr
+		ml.Total = 1
+		return ml
+	}
+	ml.Total = 0
+	return ml
+}
+
+type vtbCDNJSON struct {
 	Search    map[string]string `json:"search"`
 	condition string
 	keyword   string
 	PageIndex int `json:"pageIndex"`
 	PageRows  int `json:"pageRows"`
 }
-type vtbPOSTJson struct {
+type vtbPOSTJSON struct {
 	Search    map[string]string `json:"search"`
 	condition string
 	keyword   string
 	PageIndex int `json:"pageIndex"`
 	PageRows  int `json:"pageRows"`
+}
+type vtbDetailJSON struct {
+	MusicID string `json:"id"`
 }

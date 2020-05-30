@@ -72,6 +72,54 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	case 3:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
+		list := GetVTBVocalList(mt.content)
+		var msgMake string
+		if list.Total == 0 {
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
+		} else {
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n发送歌曲对应序号即可播放"
+			counter++
+			go waitingFunc(list, MsgInfo, BotConfig)
+		}
+		switch MsgInfo.MsgType {
+		case "private":
+			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+			break
+		case "group":
+			if list.Total <= 30 {
+				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+			} else {
+				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n请在原群聊发送歌曲对应序号即可播放"
+				msgtoGroup := "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信。"
+				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgtoGroup, BotConfig)
+				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+			}
+			break
+		}
+		break
+	case 4:
+		log.SetPrefix("VTBMusic: ")
+		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
+		list := GetVTBMusicDetail(mt.content)
+		var msgMake string
+		if list.Total == 0 {
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nid:" + mt.content + "没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
+		} else {
+			info := getMusicDetail(list, 1)
+			msgMake = "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+		}
+		switch MsgInfo.MsgType {
+		case "private":
+			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+			break
+		case "group":
+			go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+			break
+		}
+		break
+	case 5:
+		log.SetPrefix("VTBMusic: ")
+		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
 		switch MsgInfo.MsgType {
 		case "private":
 			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, help.VTBMusic, BotConfig)
@@ -108,8 +156,18 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 		mt.content = msg
 		return mt
 	}
-	if msg == "vtbhelp" {
+	if strings.HasPrefix(msg, "vtb歌手") {
+		mt.content = strings.Replace(msg, "vtb歌手", "", 1)
 		mt.ctype = 3
+		return mt
+	}
+	if strings.HasPrefix(msg, "vtbid点歌") {
+		mt.content = strings.Replace(msg, "vtbid点歌", "", 1)
+		mt.ctype = 4
+		return mt
+	}
+	if msg == "vtbhelp" {
+		mt.ctype = 5
 		mt.content = "Get help"
 		return mt
 	}
