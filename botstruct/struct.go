@@ -11,6 +11,7 @@ type MsgInfo struct {
 	GroupID   string
 	Message   string
 	MsgType   string
+	RobotID   string
 	MD5       [16]byte
 }
 
