@@ -28,8 +28,8 @@ func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	au := GetAu(MsgInfo.Message)
 
 	if au != "" {
-		log.SetPrefix("BiliAu2Card")
-		log.Println("Created request for", au, "from:", MsgInfo.SenderID)
+		log.SetPrefix("BiliAu2Card: ")
+		log.Println("Known command:", au, "from:", MsgInfo.SenderID)
 		Auinfo := GetAuInfo(au)
 
 		if !Auinfo.AuStatus {

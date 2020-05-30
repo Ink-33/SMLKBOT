@@ -6,6 +6,7 @@ import (
 	"SMLKBOT/cqfunction"
 	"SMLKBOT/vtbmusic"
 	_ "crypto/hmac"
+	"crypto/md5"
 	_ "crypto/sha1"
 	"fmt"
 	"io/ioutil"
@@ -13,6 +14,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 
 	"github.com/tidwall/gjson"
@@ -41,7 +43,8 @@ func MsgHandler(raw []byte) (MsgInfo *botstruct.MsgInfo) {
 	mi.GroupID = gjson.GetBytes(raw, "group_id").String()
 	mi.Message = gjson.GetBytes(raw, "message").String()
 	mi.SenderID = gjson.GetBytes(raw, "user_id").String()
-
+	str := []byte(strconv.FormatInt(mi.TimeStamp, 10) + mi.MsgType + mi.GroupID + mi.Message + mi.SenderID)
+	mi.MD5 = md5.Sum(str)
 	return mi
 }
 

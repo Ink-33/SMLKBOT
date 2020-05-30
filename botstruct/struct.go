@@ -11,6 +11,7 @@ type MsgInfo struct {
 	GroupID   string
 	Message   string
 	MsgType   string
+	MD5       [16]byte
 }
 
 //Auinfo includes some basic info of a Au number.
@@ -47,4 +48,3 @@ type VTBMusicList struct {
 	Total int64
 	Data  []gjson.Result
 }
-

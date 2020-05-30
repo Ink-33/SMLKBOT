@@ -3,6 +3,7 @@ package vtbmusic
 import (
 	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
+	"SMLKBOT/help"
 	"log"
 	"regexp"
 	"strconv"
@@ -32,11 +33,11 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		break
 	case 1:
 		log.SetPrefix("VTBMusic: ")
-		log.Println("Created request for", mt.content, "from:", MsgInfo.SenderID)
+		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
 		list := GetVTBMusicList(mt.content)
 		var msgMake string
 		if list.Total == 0 {
-			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》没有在VtbMusic上找到结果，请更换关键词重试"
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		} else {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n发送歌曲对应序号即可播放"
 			counter++
@@ -47,19 +48,39 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
 			break
 		case "group":
-			go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+			if list.Total <= 30 {
+				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+			} else {
+				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n请在原群聊发送歌曲对应序号即可播放"
+				msgtoGroup := "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信。"
+				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgtoGroup, BotConfig)
+				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+			}
 			break
 		}
 		break
 	case 2:
 		log.SetPrefix("VTBMusic: ")
-		log.Println("Created request for", mt.content, "from:", MsgInfo.SenderID)
+		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
 		if counter != 0 {
 			wc := new(waitingChan)
 			wc.MsgInfo = *MsgInfo
 			wc.isTimeOut = false
 			waiting <- wc
 		}
+		break
+	case 3:
+		log.SetPrefix("VTBMusic: ")
+		log.Println("Known command:", mt.content, "from:", MsgInfo.SenderID)
+		switch MsgInfo.MsgType {
+		case "private":
+			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, help.VTBMusic, BotConfig)
+			break
+		case "group":
+			go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, help.VTBMusic, BotConfig)
+			break
+		}
+		break
 	}
 }
 
@@ -75,16 +96,21 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 	if strings.HasPrefix(msg, "vtb点歌") {
 		mt.content = strings.Replace(msg, "vtb点歌", "", 1)
 		mt.ctype = 1
-	} else {
-		reg, err := regexp.Compile("^[0-9]+$")
-		if err != nil {
-			log.Fatalln(err)
-		}
-		mt.content = strings.Join(reg.FindAllString(msg, 1), "")
-		if mt.content != "" {
-			mt.ctype = 2
-			return mt
-		}
+		return mt
+	}
+	reg, err := regexp.Compile("^[0-9]+$")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	mt.content = strings.Join(reg.FindAllString(msg, 1), "")
+	if mt.content != "" {
+		mt.ctype = 2
+		mt.content = msg
+		return mt
+	}
+	if msg == "vtbhelp" {
+		mt.ctype = 3
+		mt.content = "Get help"
 		return mt
 	}
 	return mt
@@ -104,7 +130,7 @@ func listtoMsg(list *botstruct.VTBMusicList) string {
 
 func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	go func(MsgInfo *botstruct.MsgInfo) {
-		time.Sleep(30 * time.Second)
+		time.Sleep(60 * time.Second)
 		wc := new(waitingChan)
 		wc.MsgInfo = *MsgInfo
 		wc.isTimeOut = true
@@ -112,36 +138,36 @@ func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotCo
 	}(MsgInfo)
 	for {
 		c := <-waiting
-		if c.isTimeOut {
+		if c.isTimeOut && c.MD5 == MsgInfo.MD5 {
 			counter--
 			break
-		}
-		index, err := strconv.Atoi(c.Message)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		if int64(index) <= list.Total && int64(index) > 0 && c.TimeStamp >= MsgInfo.TimeStamp {
-			if c.SenderID == MsgInfo.SenderID && c.MsgType == MsgInfo.MsgType {
-				switch c.MsgType {
-				case "private":
-					info := getMusicDetail(list, index)
-					cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
-					counter--
-					go cqfunction.CQSendPrivateMsg(c.SenderID, cqCodeMake, BotConfig)
-					break
-				case "group":
-					if c.GroupID == MsgInfo.GroupID {
+		} else if c.TimeStamp > MsgInfo.TimeStamp {
+			index, err := strconv.Atoi(c.Message)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			if int64(index) <= list.Total && int64(index) > 0 {
+				if c.SenderID == MsgInfo.SenderID && c.MsgType == MsgInfo.MsgType {
+					switch c.MsgType {
+					case "private":
 						info := getMusicDetail(list, index)
 						cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
 						counter--
-						go cqfunction.CQSendGroupMsg(c.GroupID, cqCodeMake, BotConfig)
+						go cqfunction.CQSendPrivateMsg(c.SenderID, cqCodeMake, BotConfig)
 						break
+					case "group":
+						if c.GroupID == MsgInfo.GroupID {
+							info := getMusicDetail(list, index)
+							cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+							counter--
+							go cqfunction.CQSendGroupMsg(c.GroupID, cqCodeMake, BotConfig)
+							break
+						}
 					}
+					break
 				}
-				break
 			}
 		}
-
 	}
 }
 
