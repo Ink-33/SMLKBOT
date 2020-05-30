@@ -5,9 +5,9 @@ import (
 	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
 	"SMLKBOT/vtbmusic"
-	_ "crypto/hmac"
+	"crypto/hmac"
 	"crypto/md5"
-	_ "crypto/sha1"
+	"crypto/sha1"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/tidwall/gjson"
@@ -27,8 +28,8 @@ var cqsecret string = gjson.Get(configfile, "HTTPAPIPostSecret").String()
 
 func judgeandrun(name string, function function, MsgInfo *botstruct.MsgInfo) {
 	var bc = new(botstruct.BotConfig)
-	bc.HTTPAPIAddr = gjson.Get(configfile, "CoolQ.0.Api.HTTPAPIAddr").String()
-	bc.HTTPAPIToken = gjson.Get(configfile, "CoolQ.0.Api.HTTPAPIToken").String()
+	bc.HTTPAPIAddr = gjson.Get(configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIAddr").String()
+	bc.HTTPAPIToken = gjson.Get(configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIToken").String()
 	config := gjson.Get(configfile, "Feature.0").String()
 	if gjson.Get(config, name).Bool() {
 		go function(MsgInfo, bc)
@@ -55,27 +56,31 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(400)
 		fmt.Fprint(w, "Bad request.")
 	} else {
-		//signature := r.Header.Get("X-Signature")
-
+		rid := r.Header.Get("X-Self-ID")
 		defer r.Body.Close()
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Fatalln(err)
 		}
-		//TODO: Add HMAC-SHA1 signature verification.
-		/*
-			mac1 := hmac.New(sha1.New, []byte(cqsecret))
-			fmt.Println(string(body[:]))
-			mac1.Write(body)
-			fmt.Printf("%x\n",mac1.Sum(nil))
-			fmt.Println(signature)
-			fmt.Println(hmac.Equal(mac1.Sum(nil), []byte(signature)))
-		*/
-		var msgInfoTmp = MsgHandler(body)
-		log.SetPrefix("SMLKBOT: ")
-		log.Println("Received message:", msgInfoTmp.Message, "from:", msgInfoTmp.SenderID)
-		go judgeandrun("BiliAu2Card", biliau2card.Au2Card, msgInfoTmp)
-		go judgeandrun("VTBMusic", vtbmusic.VTBMusic, msgInfoTmp)
+		hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(configfile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
+		hmacsh1.Reset()
+		hmacsh1.Write(body)
+		var signature string = strings.Replace(r.Header.Get("X-Signature"), "sha1=", "", 1)
+		var hmacresult string = fmt.Sprintf("%x", hmacsh1.Sum(nil))
+		if signature == "" {
+			w.WriteHeader(401)
+			fmt.Fprint(w, "Unauthorized.")
+		} else if signature != hmacresult {
+			w.WriteHeader(401)
+			fmt.Fprint(w, "Unauthorized.")
+		} else {
+			var msgInfoTmp = MsgHandler(body)
+			msgInfoTmp.RobotID = rid
+			log.SetPrefix("SMLKBOT: ")
+			log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID)
+			go judgeandrun("BiliAu2Card", biliau2card.Au2Card, msgInfoTmp)
+			go judgeandrun("VTBMusic", vtbmusic.VTBMusic, msgInfoTmp)
+		}
 	}
 }
 
@@ -93,8 +98,8 @@ func closeSignalHandler() {
 func main() {
 	log.SetPrefix("SMLKBOT: ")
 	closeSignalHandler()
-	path := gjson.Get(configfile, "CoolQ.0.HTTPServer.ListeningPath").String()
-	port := gjson.Get(configfile, "CoolQ.0.HTTPServer.ListeningPort").String()
+	path := gjson.Get(configfile, "CoolQ.HTTPServer.ListeningPath").String()
+	port := gjson.Get(configfile, "CoolQ.HTTPServer.ListeningPort").String()
 
 	log.Println("Powered by Ink33")
 	log.Println("Start listening", path, port)
