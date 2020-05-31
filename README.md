@@ -1,5 +1,5 @@
 # SMLKBOT
-SMLKBOT, 基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人  
+SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人后端程序  
 
 ## 1,功能
 以下功能均已实装，并可以通过修改配置文件进行独立开关  
@@ -44,7 +44,8 @@ VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐
 *注:不显示图片是TIM特性,图片均能在移动端QQ正常显示*
 
 ## 2,配置
-将`conf.example.json`重命名为`conf.json`,
+将`conf.example.json`重命名为`conf.json`  
+以下为完整示例文件  
 ```json
 {
     "CoolQ": {
@@ -67,4 +68,59 @@ VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐
         }
     ]
 }
+```  
+
+#### 解析: API部分  
+
+```json
+"Api": {
+    "123": {
+        "HTTPAPIAddr": "",
+        "HTTPAPIToken": "",
+        "HTTPAPIPostSecret": ""
+    }
+}
 ```
+将上述`123`更换为机器人的QQ号  
+`HTTPAPIAddr`对应CQHTTP的`host`配置  
+`HTTPAPIToken`对应CQHTTP的`access_token`配置  
+`HTTPAPIPostSecret`对应CQHTTP的`secert`配置  
+**以上四项均为必须项**  
+
+本程序支持同时为多个机器人账号处理信息,配置如下:
+```json
+"Api": {
+    "123": {
+        "HTTPAPIAddr": "",
+        "HTTPAPIToken": "",
+        "HTTPAPIPostSecret": ""
+    },
+    "456": {
+        "HTTPAPIAddr": "",
+        "HTTPAPIToken": "",
+        "HTTPAPIPostSecret": ""
+    }
+}     
+```
+要求与上述相同。
+
+#### 解析: HTTPServer部分
+```json
+"HTTPServer": {
+    "ListeningPath": "/api/cqmsg",
+    "ListeningPort": 12345
+}
+```
+`ListeningPath`为监听路径  
+`ListeningPort`为监听端口  
+
+此处对应CQHTTP的`post_url`配置  
+
+对于例子配置，你应该将`http://{yourdomain}:12345/api/cqmsg`填入`post_url`,`{yourdomain}`对应你的域名或ip,若将程序运行在机器人服务器则填写`127.0.0.1`  
+
+本程序暂不支持HTTPS,需要HTTPS的可以先使用Nginx等进行反代，~~或者等我想起来要做这个功能~~。
+#### 解析: Features部分
+`false`是禁用，`true`是启用。
+
+## Changelog
+现在没有。
