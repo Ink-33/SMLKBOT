@@ -72,6 +72,21 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		break
 	case 2:
 		log.SetPrefix("VTBMusic: ")
+		log.Println("Known command: Get quantity of music.")
+		list := GetVTBMusicList(mt.content)
+		var msgMake string
+		msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nVTBMusic 当前已收录歌曲 " + strconv.FormatInt(list.Total, 10) + "首。获取使用帮助请发送vtbhelp"
+		switch MsgInfo.MsgType {
+		case "private":
+			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+			break
+		case "group":
+			go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+			break
+		}
+		break
+	case 3:
+		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
 		if counter != 0 {
 			wc := new(waitingChan)
@@ -80,11 +95,24 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			waiting <- wc
 		}
 		break
-	case 3:
+	case 4:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
-		list := GetVTBVocalList(mt.content)
 		var msgMake string
+		if mt.content == "" {
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n命令格式错误，请发送vtbhelp获取帮助"
+			switch MsgInfo.MsgType {
+			case "private":
+				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+				break
+			case "group":
+				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+				break
+			}
+			break
+		}
+		list := GetVTBVocalList(mt.content)
+		log.Println(list)
 		if list.Total == 0 {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		} else {
@@ -114,7 +142,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			break
 		}
 		break
-	case 4:
+	case 5:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
 		list := GetVTBMusicDetail(mt.content)
@@ -134,7 +162,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			break
 		}
 		break
-	case 5:
+	case 6:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
 		switch MsgInfo.MsgType {
@@ -160,28 +188,32 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 	}
 	if strings.HasPrefix(msg, "vtb点歌") {
 		mt.content = strings.Replace(msg, "vtb点歌", "", 1)
-		mt.ctype = 1
+		if mt.content != "" {
+			mt.ctype = 1
+			return mt
+		}
+		mt.ctype = 2
 		return mt
 	}
 	reg := regexp.MustCompile("^[0-9]+$")
 	mt.content = strings.Join(reg.FindAllString(msg, 1), "")
 	if mt.content != "" {
-		mt.ctype = 2
+		mt.ctype = 3
 		mt.content = msg
 		return mt
 	}
 	if strings.HasPrefix(msg, "vtb歌手") {
 		mt.content = strings.Replace(msg, "vtb歌手", "", 1)
-		mt.ctype = 3
+		mt.ctype = 4
 		return mt
 	}
 	if strings.HasPrefix(msg, "vtbid点歌") {
 		mt.content = strings.Replace(msg, "vtbid点歌", "", 1)
-		mt.ctype = 4
+		mt.ctype = 5
 		return mt
 	}
 	if msg == "vtbhelp" {
-		mt.ctype = 5
+		mt.ctype = 6
 		mt.content = "Get help"
 		return mt
 	}
