@@ -1,10 +1,8 @@
 package main
 
 import (
-	"SMLKBOT/biliau2card"
 	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
-	"SMLKBOT/vtbmusic"
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
@@ -21,18 +19,18 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type function func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig)
+type functionFormat func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig)
 
 var configfile string = cqfunction.ReadConfig()
 var cqsecret string = gjson.Get(configfile, "HTTPAPIPostSecret").String()
 
-func judgeandrun(name string, function function, MsgInfo *botstruct.MsgInfo) {
+func judgeandrun(name string, functionFormat functionFormat, MsgInfo *botstruct.MsgInfo) {
 	var bc = new(botstruct.BotConfig)
 	bc.HTTPAPIAddr = gjson.Get(configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIAddr").String()
 	bc.HTTPAPIToken = gjson.Get(configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIToken").String()
 	config := gjson.Get(configfile, "Feature.0").String()
 	if gjson.Get(config, name).Bool() {
-		go function(MsgInfo, bc)
+		go functionFormat(MsgInfo, bc)
 	}
 }
 
@@ -78,8 +76,9 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 			msgInfoTmp.RobotID = rid
 			log.SetPrefix("SMLKBOT: ")
 			log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID)
-			go judgeandrun("BiliAu2Card", biliau2card.Au2Card, msgInfoTmp)
-			go judgeandrun("VTBMusic", vtbmusic.VTBMusic, msgInfoTmp)
+			for k, v := range functionList {
+				go judgeandrun(k, v, msgInfoTmp)
+			}
 		}
 	}
 }
@@ -97,6 +96,8 @@ func closeSignalHandler() {
 
 func main() {
 	log.SetPrefix("SMLKBOT: ")
+	functionLoad()
+
 	closeSignalHandler()
 	path := gjson.Get(configfile, "CoolQ.HTTPServer.ListeningPath").String()
 	port := gjson.Get(configfile, "CoolQ.HTTPServer.ListeningPort").String()
