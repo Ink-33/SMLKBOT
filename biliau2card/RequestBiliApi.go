@@ -2,10 +2,9 @@ package biliau2card
 
 import (
 	"SMLKBOT/botstruct"
-	"log"
+	"SMLKBOT/cqfunction"
 	"regexp"
 	"strings"
-	"SMLKBOT/cqfunction"
 
 	"github.com/tidwall/gjson"
 )
@@ -17,10 +16,7 @@ const biliAudioJumpURL string = "https://www.bilibili.com/audio/au"
 //GetAuInfo : Get Bilibili Audio info
 func GetAuInfo(au string) (Auinfo *botstruct.Auinfo) {
 	var ai = new(botstruct.Auinfo)
-	reg, err := regexp.Compile("[0-9]+")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	reg := regexp.MustCompile("[0-9]+")
 
 	ai.AuNumber = strings.Join(reg.FindAllString(au, 1), "")
 	ai.AuURL = biliAudioPlayURL + ai.AuNumber

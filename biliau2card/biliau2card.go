@@ -14,10 +14,7 @@ func GetAu(msg string) (au string) {
 		return ""
 	}
 
-	reg, err := regexp.Compile("(?i)au[0-9]+")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	reg := regexp.MustCompile("(?i)au[0-9]+")
 
 	str := strings.Join(reg.FindAllString(msg, 1), "")
 	return str

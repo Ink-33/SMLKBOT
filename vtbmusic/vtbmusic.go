@@ -252,7 +252,7 @@ func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotCo
 		} else if c.TimeStamp > MsgInfo.TimeStamp && isNumber(c.Message) {
 			index, err := strconv.Atoi(c.Message)
 			if err != nil {
-				log.Fatalln(err)
+				log.Println(err)
 			}
 			if int64(index) <= list.Total && int64(index) > 0 {
 				if c.SenderID == MsgInfo.SenderID && c.MsgType == MsgInfo.MsgType {

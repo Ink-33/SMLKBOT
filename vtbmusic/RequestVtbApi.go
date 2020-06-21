@@ -28,7 +28,7 @@ func GetVTBMusicList(musicname string) (VTBMusicList *botstruct.VTBMusicList) {
 
 	p, err := json.Marshal(postjson)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	result := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
@@ -51,7 +51,7 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 
 	p, err := json.Marshal(postjson)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	//log.Println(string(p))
 	result := cqfunction.WebPostJSONContent(vtbMusicCDNDetailAPIAddr, string(p))
@@ -82,7 +82,7 @@ func GetVTBVocalList(vocalname string) (VTBMusicList *botstruct.VTBMusicList) {
 
 	p, err := json.Marshal(postjson)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	result := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
@@ -99,7 +99,7 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *botstruct.VTBMusicList) {
 	}
 	p, err := json.Marshal(postjson)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 
 	result := cqfunction.WebPostJSONContent(vtbMusicDetailAPIAddr, string(p))

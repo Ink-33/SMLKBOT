@@ -27,16 +27,16 @@ func GetWebContent(url string) (body []byte) {
 	request, err := http.NewRequest("GET", url, nil)
 	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4117.2 Safari/537.36")
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	response, err := client.Do(request)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	defer response.Body.Close()
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	return content
 }
@@ -49,16 +49,16 @@ func WebPostJSONContent(Addr string, postbody string) (body []byte) {
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4117.2 Safari/537.36")
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	response, err := client.Do(request)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	defer response.Body.Close()
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 	}
 	return content
 }

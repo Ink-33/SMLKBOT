@@ -58,7 +58,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Fatalln(err)
+			log.Println(err)
 		}
 		hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(configfile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
 		hmacsh1.Reset()
@@ -108,6 +108,6 @@ func main() {
 	http.HandleFunc(path, HTTPhandler)
 	err := http.ListenAndServe(":"+port, nil)
 	if err != nil {
-		log.Fatal("ListenAndServe", err)
+		log.Fatalln("ListenAndServe", err)
 	}
 }
