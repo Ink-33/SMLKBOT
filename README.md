@@ -122,5 +122,5 @@ VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐
 #### 解析: Features部分
 `false`是禁用，`true`是启用。
 
-## Changelog
-现在没有。
+## 更新计划
+Steam综合
