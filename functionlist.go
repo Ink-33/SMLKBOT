@@ -1,7 +1,7 @@
 package main
 
 import (
-	"SMLKBOT/biliau2card"
+	"SMLKBOT/bilibili/biliau2card"
 	"SMLKBOT/vtbmusic"
 )
 
