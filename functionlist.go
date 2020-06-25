@@ -1,13 +1,13 @@
 package main
 
 import (
-	"SMLKBOT/bilibili/biliau2card"
+	"SMLKBOT/bilibili"
 	"SMLKBOT/vtbmusic"
 )
 
 var functionList = make(map[string]functionFormat)
 
 func functionLoad() {
-	functionList["BiliAu2Card"] = biliau2card.Au2Card
+	functionList["Bilibili"] = bilibili.Bilibili
 	functionList["VTBMusic"] = vtbmusic.VTBMusic
 }

@@ -186,7 +186,11 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 		return mt
 	}
 	if strings.HasPrefix(msg, "vtb点歌") {
-		mt.content = strings.Replace(msg, "vtb点歌", "", 1)
+		if strings.HasPrefix(msg, "vtb点歌 ") {
+			mt.content = strings.Replace(msg, "vtb点歌 ", "", 1)
+		} else {
+			mt.content = strings.Replace(msg, "vtb点歌", "", 1)
+		}
 		if mt.content != "" {
 			mt.ctype = 1
 			return mt
@@ -202,12 +206,20 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 		return mt
 	}
 	if strings.HasPrefix(msg, "vtb歌手") {
-		mt.content = strings.Replace(msg, "vtb歌手", "", 1)
+		if strings.HasPrefix(msg, "vtb歌手 ") {
+			mt.content = strings.Replace(msg, "vtb歌手 ", "", 1)
+		} else {
+			mt.content = strings.Replace(msg, "vtb歌手", "", 1)
+		}
 		mt.ctype = 4
 		return mt
 	}
 	if strings.HasPrefix(msg, "vtbid点歌") {
-		mt.content = strings.Replace(msg, "vtbid点歌", "", 1)
+		if strings.HasPrefix(msg, "vtbid点歌 ") {
+			mt.content = strings.Replace(msg, "vtbid点歌 ", "", 1)
+		} else {
+			mt.content = strings.Replace(msg, "vtbid点歌", "", 1)
+		}
 		mt.ctype = 5
 		return mt
 	}

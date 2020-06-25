@@ -1,4 +1,4 @@
-package biliau2card
+package bilibili
 
 import (
 	"SMLKBOT/botstruct"

@@ -71,25 +71,27 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(401)
 			fmt.Fprint(w, "Unauthorized.")
 		} else {
-			var msgInfoTmp = MsgHandler(body)
-			msgInfoTmp.RobotID = rid
-			var bc = new(botstruct.BotConfig)
-			bc.HTTPAPIAddr = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
-			bc.HTTPAPIToken = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
-			bc.MasterID = gjson.Get(*configfile, "CoolQ.Master").Array()
-			log.SetPrefix("SMLKBOT: ")
-			go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", botshell.RoleHandler(msgInfoTmp, bc))
-			if msgInfoTmp.Message == ">SMLK reload" {
-				if botshell.RoleHandler(msgInfoTmp, bc) == "master" {
-					configfile = cqfunction.ReadConfig()
-					log.Println("Succeed.")
-					botshell.ShellLog(msgInfoTmp, bc, true)
+			if gjson.GetBytes(body, "meta_event_type").String() != "heartbeat" {
+				var msgInfoTmp = MsgHandler(body)
+				msgInfoTmp.RobotID = rid
+				var bc = new(botstruct.BotConfig)
+				bc.HTTPAPIAddr = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
+				bc.HTTPAPIToken = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
+				bc.MasterID = gjson.Get(*configfile, "CoolQ.Master").Array()
+				log.SetPrefix("SMLKBOT: ")
+				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", botshell.RoleHandler(msgInfoTmp, bc))
+				if msgInfoTmp.Message == ">SMLK reload" {
+					if botshell.RoleHandler(msgInfoTmp, bc) == "master" {
+						configfile = cqfunction.ReadConfig()
+						log.Println("Succeed.")
+						botshell.ShellLog(msgInfoTmp, bc, true)
+					} else {
+						botshell.ShellLog(msgInfoTmp, bc, false)
+					}
 				} else {
-					botshell.ShellLog(msgInfoTmp, bc, false)
-				}
-			} else {
-				for k, v := range functionList {
-					go judgeandrun(k, v, msgInfoTmp, bc)
+					for k, v := range functionList {
+						go judgeandrun(k, v, msgInfoTmp, bc)
+					}
 				}
 			}
 		}
