@@ -51,7 +51,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 	method := r.Method
 	if method != "POST" {
 		w.WriteHeader(400)
-		fmt.Fprint(w, "<body><img src=\"https://api.smlk.org/mirror/ink33/what.png\"/>Bad request.</body>")
+		fmt.Fprint(w, "<body><img src=\"https://api.smlk.org/mirror/ink33/what.png\" style=\"vertical-align: top\" alt=\"Bad request.\"/><ln><p>Bad request.</p></body>")
 	} else {
 		rid := r.Header.Get("X-Self-ID")
 		defer r.Body.Close()
