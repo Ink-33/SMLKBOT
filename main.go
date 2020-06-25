@@ -1,9 +1,9 @@
 package main
 
 import (
-	"SMLKBOT/smlkshell"
 	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
+	"SMLKBOT/smlkshell"
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
@@ -51,7 +51,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 	method := r.Method
 	if method != "POST" {
 		w.WriteHeader(400)
-		fmt.Fprint(w, "Bad request.")
+		fmt.Fprint(w, "<body><img src=\"https://api.smlk.org/mirror/ink33/what.png\"/>Bad request.</body>")
 	} else {
 		rid := r.Header.Get("X-Self-ID")
 		defer r.Body.Close()
