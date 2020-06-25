@@ -8,6 +8,7 @@ import (
 type MsgInfo struct {
 	TimeStamp int64
 	SenderID  string
+	Role      string
 	GroupID   string
 	Message   string
 	MsgType   string
@@ -29,6 +30,7 @@ type Auinfo struct {
 
 //BotConfig includes CQHTTPAPI config.
 type BotConfig struct {
+	MasterID          string
 	HTTPAPIAddr       string
 	HTTPAPIToken      string
 	HTTPAPIPostSecret string

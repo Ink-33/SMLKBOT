@@ -44,7 +44,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		if list.Total == 0 {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		} else {
-			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n发送歌曲对应序号即可播放"
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放"
 			counter++
 			w := new(waitingChan)
 			w.isNewRequest = true
@@ -62,7 +62,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			if list.Total <= 30 {
 				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
 			} else {
-				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n请在原群聊发送歌曲对应序号即可播放"
+				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n━━━━━━━━━━━━━━\n请在原群聊发送歌曲对应序号即可播放"
 				msgtoGroup := "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信。"
 				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgtoGroup, BotConfig)
 				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
@@ -112,11 +112,10 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			break
 		}
 		list := GetVTBVocalList(mt.content)
-		log.Println(list)
 		if list.Total == 0 {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		} else {
-			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n发送歌曲对应序号即可播放"
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放"
 			counter++
 			w := new(waitingChan)
 			w.isNewRequest = true
@@ -134,7 +133,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			if list.Total <= 30 {
 				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
 			} else {
-				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n----------\n请在原群聊发送歌曲对应序号即可播放"
+				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n━━━━━━━━━━━━━━\n请在原群聊发送歌曲对应序号即可播放"
 				msgtoGroup := "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信。"
 				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgtoGroup, BotConfig)
 				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)

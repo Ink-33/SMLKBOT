@@ -64,11 +64,11 @@ func WebPostJSONContent(Addr string, postbody string) (body []byte) {
 }
 
 //ReadConfig : Read config file.
-func ReadConfig() string {
+func ReadConfig() *string {
 	file, err := ioutil.ReadFile("conf.json")
 	if err != nil {
 		log.Fatal(err)
 	}
 	result := string(file)
-	return result
+	return &result
 }

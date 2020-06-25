@@ -21,14 +21,15 @@ import (
 
 type functionFormat func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig)
 
-var configfile string = cqfunction.ReadConfig()
-var cqsecret string = gjson.Get(configfile, "HTTPAPIPostSecret").String()
+var configfile *string = cqfunction.ReadConfig()
+var cqsecret string = gjson.Get(*configfile, "HTTPAPIPostSecret").String()
 
 func judgeandrun(name string, functionFormat functionFormat, MsgInfo *botstruct.MsgInfo) {
 	var bc = new(botstruct.BotConfig)
-	bc.HTTPAPIAddr = gjson.Get(configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIAddr").String()
-	bc.HTTPAPIToken = gjson.Get(configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIToken").String()
-	config := gjson.Get(configfile, "Feature.0").String()
+	bc.HTTPAPIAddr = gjson.Get(*configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIAddr").String()
+	bc.HTTPAPIToken = gjson.Get(*configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIToken").String()
+	bc.MasterID = gjson.Get(*configfile, "CoolQ.Master").String()
+	config := gjson.Get(*configfile, "Feature.0").String()
 	if gjson.Get(config, name).Bool() {
 		go functionFormat(MsgInfo, bc)
 	}
@@ -42,6 +43,7 @@ func MsgHandler(raw []byte) (MsgInfo *botstruct.MsgInfo) {
 	mi.GroupID = gjson.GetBytes(raw, "group_id").String()
 	mi.Message = gjson.GetBytes(raw, "message").String()
 	mi.SenderID = gjson.GetBytes(raw, "user_id").String()
+	mi.Role = gjson.GetBytes(raw, "sender.role").String()
 	str := []byte(strconv.FormatInt(mi.TimeStamp, 10) + mi.MsgType + mi.GroupID + mi.Message + mi.SenderID)
 	mi.MD5 = md5.Sum(str)
 	return mi
@@ -60,7 +62,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println(err)
 		}
-		hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(configfile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
+		hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(*configfile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
 		hmacsh1.Reset()
 		hmacsh1.Write(body)
 		var signature string = strings.Replace(r.Header.Get("X-Signature"), "sha1=", "", 1)
@@ -75,9 +77,14 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 			var msgInfoTmp = MsgHandler(body)
 			msgInfoTmp.RobotID = rid
 			log.SetPrefix("SMLKBOT: ")
-			log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID)
-			for k, v := range functionList {
-				go judgeandrun(k, v, msgInfoTmp)
+			log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", msgInfoTmp.Role)
+			if msgInfoTmp.Message == ">SMLK reload" && msgInfoTmp.SenderID == gjson.Get(*configfile, "CoolQ.Master").String() {
+				configfile = cqfunction.ReadConfig()
+				log.Println("Succeed.")
+			} else {
+				for k, v := range functionList {
+					go judgeandrun(k, v, msgInfoTmp)
+				}
 			}
 		}
 	}
@@ -99,8 +106,8 @@ func main() {
 	functionLoad()
 
 	closeSignalHandler()
-	path := gjson.Get(configfile, "CoolQ.HTTPServer.ListeningPath").String()
-	port := gjson.Get(configfile, "CoolQ.HTTPServer.ListeningPort").String()
+	path := gjson.Get(*configfile, "CoolQ.HTTPServer.ListeningPath").String()
+	port := gjson.Get(*configfile, "CoolQ.HTTPServer.ListeningPort").String()
 
 	log.Println("Powered by Ink33")
 	log.Println("Start listening", path, port)
