@@ -12,7 +12,7 @@ SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的�
 效果：  
 ![au9](docs/au9.png)  
 
-*注:不显示图片是TIM特性,图片均能在移动端QQ正常显示*
+*注:不显示图片是TIM特性,图片均能在移动端QQ正常显示*  
 未实装：
 avid,bvid解析
 ep,cv解析
