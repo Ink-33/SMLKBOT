@@ -30,7 +30,7 @@ type Auinfo struct {
 
 //BotConfig includes CQHTTPAPI config.
 type BotConfig struct {
-	MasterID          string
+	MasterID          []gjson.Result
 	HTTPAPIAddr       string
 	HTTPAPIToken      string
 	HTTPAPIPostSecret string

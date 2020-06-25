@@ -21,6 +21,18 @@ func CQSendPrivateMsg(id, msg string, BotConfig *botstruct.BotConfig) {
 	GetWebContent(BotConfig.HTTPAPIAddr + "/send_private_msg?access_token=" + BotConfig.HTTPAPIToken + "&user_id=" + id + "&message=" + url.QueryEscape(msg))
 }
 
+//CQSendMsg : Send message
+func CQSendMsg(MsgInfo *botstruct.MsgInfo, msg string, BotConfig *botstruct.BotConfig) {
+	switch MsgInfo.MsgType {
+	case "private":
+		go CQSendPrivateMsg(MsgInfo.SenderID, msg, BotConfig)
+		break
+	case "group":
+		go CQSendGroupMsg(MsgInfo.GroupID, msg, BotConfig)
+		break
+	}
+}
+
 //GetWebContent : Get web Content by using GET request.
 func GetWebContent(url string) (body []byte) {
 	client := &http.Client{}

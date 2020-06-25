@@ -1,6 +1,7 @@
 package main
 
 import (
+	"SMLKBOT/botshell"
 	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
 	"crypto/hmac"
@@ -24,14 +25,10 @@ type functionFormat func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotCon
 var configfile *string = cqfunction.ReadConfig()
 var cqsecret string = gjson.Get(*configfile, "HTTPAPIPostSecret").String()
 
-func judgeandrun(name string, functionFormat functionFormat, MsgInfo *botstruct.MsgInfo) {
-	var bc = new(botstruct.BotConfig)
-	bc.HTTPAPIAddr = gjson.Get(*configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIAddr").String()
-	bc.HTTPAPIToken = gjson.Get(*configfile, "CoolQ.Api."+MsgInfo.RobotID+".HTTPAPIToken").String()
-	bc.MasterID = gjson.Get(*configfile, "CoolQ.Master").String()
+func judgeandrun(name string, functionFormat functionFormat, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	config := gjson.Get(*configfile, "Feature.0").String()
 	if gjson.Get(config, name).Bool() {
-		go functionFormat(MsgInfo, bc)
+		go functionFormat(MsgInfo, BotConfig)
 	}
 }
 
@@ -76,14 +73,23 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			var msgInfoTmp = MsgHandler(body)
 			msgInfoTmp.RobotID = rid
+			var bc = new(botstruct.BotConfig)
+			bc.HTTPAPIAddr = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
+			bc.HTTPAPIToken = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
+			bc.MasterID = gjson.Get(*configfile, "CoolQ.Master").Array()
 			log.SetPrefix("SMLKBOT: ")
-			log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", msgInfoTmp.Role)
-			if msgInfoTmp.Message == ">SMLK reload" && msgInfoTmp.SenderID == gjson.Get(*configfile, "CoolQ.Master").String() {
-				configfile = cqfunction.ReadConfig()
-				log.Println("Succeed.")
+			go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", botshell.RoleHandler(msgInfoTmp, bc))
+			if msgInfoTmp.Message == ">SMLK reload" {
+				if botshell.RoleHandler(msgInfoTmp, bc) == "master" {
+					configfile = cqfunction.ReadConfig()
+					log.Println("Succeed.")
+					botshell.ShellLog(msgInfoTmp, bc, true)
+				} else {
+					botshell.ShellLog(msgInfoTmp, bc, false)
+				}
 			} else {
 				for k, v := range functionList {
-					go judgeandrun(k, v, msgInfoTmp)
+					go judgeandrun(k, v, msgInfoTmp, bc)
 				}
 			}
 		}
