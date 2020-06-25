@@ -1,4 +1,4 @@
-package botshell
+package smlkshell
 
 import (
 	"SMLKBOT/botstruct"

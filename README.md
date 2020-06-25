@@ -2,16 +2,20 @@
 SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人后端程序  
 
 ## 1,功能
-以下功能均已实装，并可以通过修改配置文件进行独立开关  
+以下功能未特别说明的均已实装，并可以通过修改配置文件进行独立开关  
 
 
-### 1.1, BiliAuCard
-**注意：本功能需要CQP**  
+### 1.1, Bilibili
+**注意：部分功能需要CQP**
+已实装：
 提取聊天中的au号,然后返回音频分享卡片。  
 效果：  
 ![au9](docs/au9.png)  
 
 *注:不显示图片是TIM特性,图片均能在移动端QQ正常显示*
+未实装：
+avid,bvid解析
+ep,cv解析
 
 ### 1.2, VTBMusic
 **注意：本功能需要CQP**  
@@ -49,6 +53,9 @@ VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐
 ```json
 {
     "CoolQ": {
+        "master":[
+            "123"
+        ],
         "Api": {
             "": {
                 "HTTPAPIAddr": "",
@@ -63,13 +70,19 @@ VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐
     },
     "Feature": [
         {
-            "BiliAu2Card": true,
+            "Bilibili": true,
             "VTBMusic": true
         }
     ]
 }
 ```  
-
+#### 解析：Master
+master代表机器人的所有者,拥有SmlkShell的最高权限  
+数据格式为Json数组  
+目前已实装指令(完整指令包括>SMLK)： 
+```
+>SMLK reload //重载配置
+```
 #### 解析: API部分  
 
 ```json
