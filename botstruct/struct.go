@@ -51,3 +51,16 @@ type VTBMusicList struct {
 	Total int64
 	Data  []gjson.Result
 }
+
+/*
+Role is the role of message sender.
+	RoleLevel => RoleName
+		0 => member
+		1 => admin
+		2 => owner
+		3 => master
+*/
+type Role struct {
+	RoleName  string
+	RoleLevel int
+}

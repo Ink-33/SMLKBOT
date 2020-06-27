@@ -76,14 +76,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		list := GetVTBMusicList(mt.content)
 		var msgMake string
 		msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nVTBMusic 当前已收录歌曲 " + strconv.FormatInt(list.Total, 10) + "首。获取使用帮助请发送vtbhelp"
-		switch MsgInfo.MsgType {
-		case "private":
-			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
-			break
-		case "group":
-			go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
-			break
-		}
+		cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 		break
 	case 3:
 		log.SetPrefix("VTBMusic: ")
@@ -101,14 +94,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		var msgMake string
 		if mt.content == "" {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n命令格式错误，请发送vtbhelp获取帮助"
-			switch MsgInfo.MsgType {
-			case "private":
-				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
-				break
-			case "group":
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
-				break
-			}
+			cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 			break
 		}
 		list := GetVTBVocalList(mt.content)
@@ -152,14 +138,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			info := getMusicDetail(list, 1)
 			msgMake = "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
 		}
-		switch MsgInfo.MsgType {
-		case "private":
-			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
-			break
-		case "group":
-			go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
-			break
-		}
+		cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 		break
 	case 6:
 		log.SetPrefix("VTBMusic: ")
@@ -263,7 +242,7 @@ func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotCo
 		} else if c.TimeStamp > MsgInfo.TimeStamp && isNumber(c.Message) {
 			index, err := strconv.Atoi(c.Message)
 			if err != nil {
-				log.Println(err)
+				log.Fatalln(err)
 			}
 			if int64(index) <= list.Total && int64(index) > 0 {
 				if c.SenderID == MsgInfo.SenderID && c.MsgType == MsgInfo.MsgType {

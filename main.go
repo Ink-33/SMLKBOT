@@ -57,7 +57,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Println(err)
+			log.Fatalln(err)
 		}
 		hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(*configfile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
 		hmacsh1.Reset()
@@ -79,16 +79,17 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 				bc.HTTPAPIToken = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
 				bc.MasterID = gjson.Get(*configfile, "CoolQ.Master").Array()
 				log.SetPrefix("SMLKBOT: ")
-				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(msgInfoTmp, bc))
+				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(msgInfoTmp, bc).RoleName)
 				if msgInfoTmp.Message == ">SMLK reload" {
-					if smlkshell.RoleHandler(msgInfoTmp, bc) == "master" {
+					if smlkshell.RoleHandler(msgInfoTmp, bc).RoleLevel == 3 {
 						configfile = cqfunction.ReadConfig()
 						log.Println("Succeed.")
-						smlkshell.ShellLog(msgInfoTmp, bc, true)
+						smlkshell.ShellLog(msgInfoTmp, bc, "succeed")
 					} else {
-						smlkshell.ShellLog(msgInfoTmp, bc, false)
+						smlkshell.ShellLog(msgInfoTmp, bc, "deny")
 					}
 				} else {
+					smlkshell.SmlkShell(msgInfoTmp, bc)
 					for k, v := range functionList {
 						go judgeandrun(k, v, msgInfoTmp, bc)
 					}
