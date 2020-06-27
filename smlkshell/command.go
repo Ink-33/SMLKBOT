@@ -31,7 +31,7 @@ func SmlkShell(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			case "<SMLK status":
 				m := new(runtime.MemStats)
 				runtime.ReadMemStats(m)
-				msgMake := fmt.Sprintf("$SMLKBOT>\nBuild with: %s\nBuild Arch&OS: %s-%s\nBuild Date: %s\nVersion: %s\nCommit: %s\nNumGoroutine: %d\nNumCPU: %d\nMemory: %dBytes\nNumGC: %d\nForceGC: %d\nLsatGC:%s", runtime.Version(), runtime.GOARCH, runtime.GOOS, date, version, commit, runtime.NumGoroutine(), runtime.NumCPU(), m.Sys, m.NumForcedGC, m.NumGC, time.Unix(0, int64(m.LastGC)).Format("2006-01-02 15:04:05"))
+				msgMake := fmt.Sprintf("$SMLKBOT>\nBuild with: %s\nBuild Arch&OS: %s-%s\nBuild Date: %s\nVersion: %s\nCommit: %s\nNumGoroutine: %d\nNumCPU: %d\nMemory: %dBytes\nNumGC: %d\nForceGC: %d\nLsatGC:%s", runtime.Version(), runtime.GOARCH, runtime.GOOS, date, version, commit, runtime.NumGoroutine(), runtime.NumCPU(), m.Sys, m.NumGC, m.NumForcedGC, time.Unix(0, int64(m.LastGC)).Format("2006-01-02 15:04:05"))
 				log.Println(msgMake)
 				ShellLog(MsgInfo, BotConfig, msgMake)
 				break
