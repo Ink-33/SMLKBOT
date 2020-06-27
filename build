@@ -1,0 +1,2 @@
+flags="-X 'SMLKBOT/smlkshell.cd=`date`'"
+go build -x -ldflags "$flags"
