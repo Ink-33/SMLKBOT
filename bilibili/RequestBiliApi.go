@@ -3,6 +3,7 @@ package bilibili
 import (
 	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
+	"log"
 	"regexp"
 	"strings"
 
@@ -23,16 +24,26 @@ func GetAuInfo(au string) (Auinfo *botstruct.Auinfo) {
 	ai.AuJumpURL = biliAudioJumpURL + ai.AuNumber
 
 	requestAddr := biliAuAPIAddr + ai.AuNumber
-	body := string(cqfunction.GetWebContent(requestAddr)[:])
-
-	ai.AuMsg = gjson.Get(body, "msg").String()
+	body, err := cqfunction.GetWebContent(requestAddr)
+	if err != nil {
+		_, ok := err.(*cqfunction.TimeOutError)
+		if ok {
+			log.Println(err.Error())
+			ai.IsTimeOut = true
+			ai.IsTimeOut = false
+			ai.AuMsg = "Time out"
+			return
+		}
+		log.Fatalln(err)
+	}
+	ai.AuMsg = gjson.GetBytes(body, "msg").String()
 	if ai.AuMsg != "success" {
 		ai.AuStatus = false
 		return ai
 	}
 	ai.AuStatus = true
-	ai.AuCoverURL = gjson.Get(body, "data.h5Songs.cover_url").String()
-	ai.AuTitle = gjson.Get(body, "data.h5Songs.title").String()
-	ai.AuDesp = gjson.Get(body, "data.h5Songs.author").String()
+	ai.AuCoverURL = gjson.GetBytes(body, "data.h5Songs.cover_url").String()
+	ai.AuTitle = gjson.GetBytes(body, "data.h5Songs.title").String()
+	ai.AuDesp = gjson.GetBytes(body, "data.h5Songs.author").String()
 	return ai
 }

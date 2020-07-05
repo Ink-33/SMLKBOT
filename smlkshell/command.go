@@ -11,7 +11,7 @@ import (
 )
 
 //Compile
-var date, version, commit string = "unknown", "unknown", "unknown"
+var date, version, commit string = "DevBuild", "DevBuild", "DevBuild"
 
 //Reload config.
 func Reload(MsgInfo *botstruct.MsgInfo, MasterID string) (result bool) {

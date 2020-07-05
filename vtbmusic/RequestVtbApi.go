@@ -31,7 +31,15 @@ func GetVTBMusicList(musicname string) (VTBMusicList *botstruct.VTBMusicList) {
 		log.Fatalln(err)
 	}
 
-	result := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
+	result, err := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
+	if err != nil {
+		_, ok := err.(*cqfunction.TimeOutError)
+		if ok {
+			log.Println(err.Error())
+		} else {
+			log.Fatalln(err)
+		}
+	}
 	ml.Total = gjson.GetBytes(result, "Total").Int()
 	ml.Data = gjson.GetBytes(result, "Data").Array()
 	return ml
@@ -54,7 +62,15 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 		log.Fatalln(err)
 	}
 	//log.Println(string(p))
-	result := cqfunction.WebPostJSONContent(vtbMusicCDNDetailAPIAddr, string(p))
+	result, err := cqfunction.WebPostJSONContent(vtbMusicCDNDetailAPIAddr, string(p))
+	if err != nil {
+		_, ok := err.(*cqfunction.TimeOutError)
+		if ok {
+			log.Println(err.Error())
+		} else {
+			log.Fatalln(err)
+		}
+	}
 	//log.Println(string(result))
 	if gjson.GetBytes(result, "Data").Value() != nil {
 		var addr string
@@ -85,7 +101,15 @@ func GetVTBVocalList(vocalname string) (VTBMusicList *botstruct.VTBMusicList) {
 		log.Fatalln(err)
 	}
 
-	result := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
+	result, err := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
+	if err != nil {
+		_, ok := err.(*cqfunction.TimeOutError)
+		if ok {
+			log.Println(err.Error())
+		} else {
+			log.Fatalln(err)
+		}
+	}
 	ml.Total = gjson.GetBytes(result, "Total").Int()
 	ml.Data = gjson.GetBytes(result, "Data").Array()
 	return ml
@@ -102,7 +126,15 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *botstruct.VTBMusicList) {
 		log.Fatalln(err)
 	}
 
-	result := cqfunction.WebPostJSONContent(vtbMusicDetailAPIAddr, string(p))
+	result, err := cqfunction.WebPostJSONContent(vtbMusicDetailAPIAddr, string(p))
+	if err != nil {
+		_, ok := err.(*cqfunction.TimeOutError)
+		if ok {
+			log.Println(err.Error())
+		} else {
+			log.Fatalln(err)
+		}
+	}
 	if gjson.GetBytes(result, "Data").Value() != nil {
 		gr := make([]gjson.Result, 1)
 		gr[0] = gjson.GetBytes(result, "Data|@this")

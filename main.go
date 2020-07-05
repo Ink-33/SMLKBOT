@@ -22,8 +22,11 @@ import (
 
 type functionFormat func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig)
 
-var configfile *string = cqfunction.ReadConfig()
-var cqsecret string = gjson.Get(*configfile, "HTTPAPIPostSecret").String()
+var configfile *string
+
+func init() {
+	configfile = cqfunction.ReadConfig()
+}
 
 func judgeandrun(name string, functionFormat functionFormat, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	config := gjson.Get(*configfile, "Feature.0").String()

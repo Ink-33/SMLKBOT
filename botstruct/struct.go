@@ -26,6 +26,7 @@ type Auinfo struct {
 	AuURL      string
 	AuTitle    string
 	AuDesp     string
+	IsTimeOut  bool
 }
 
 //BotConfig includes CQHTTPAPI config.
