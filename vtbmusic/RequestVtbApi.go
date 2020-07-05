@@ -5,6 +5,7 @@ import (
 	"SMLKBOT/cqfunction"
 	"encoding/json"
 	"log"
+	"runtime"
 
 	"github.com/tidwall/gjson"
 )
@@ -36,6 +37,7 @@ func GetVTBMusicList(musicname string) (VTBMusicList *botstruct.VTBMusicList) {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
 			log.Println(err.Error())
+			runtime.Goexit()
 		} else {
 			log.Fatalln(err)
 		}
@@ -67,6 +69,7 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
 			log.Println(err.Error())
+			runtime.Goexit()
 		} else {
 			log.Fatalln(err)
 		}
@@ -106,6 +109,7 @@ func GetVTBVocalList(vocalname string) (VTBMusicList *botstruct.VTBMusicList) {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
 			log.Println(err.Error())
+			runtime.Goexit()
 		} else {
 			log.Fatalln(err)
 		}
@@ -131,6 +135,7 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *botstruct.VTBMusicList) {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
 			log.Println(err.Error())
+			runtime.Goexit()
 		} else {
 			log.Fatalln(err)
 		}
