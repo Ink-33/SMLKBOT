@@ -83,7 +83,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 				bc.MasterID = gjson.Get(*configfile, "CoolQ.Master").Array()
 				log.SetPrefix("SMLKBOT: ")
 				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(msgInfoTmp, bc).RoleName)
-				if msgInfoTmp.Message == ">SMLK reload" {
+				if msgInfoTmp.Message == "<SMLK reload" {
 					if smlkshell.RoleHandler(msgInfoTmp, bc).RoleLevel == 3 {
 						configfile = cqfunction.ReadConfig()
 						log.Println("Succeed.")

@@ -35,12 +35,7 @@ VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐
 效果：  
 ![vtbid点歌](docs/vtb2.png) 
 ```
-3: 歌手点歌 -> vtb歌手+歌手名  
-```
-效果：  
-![vtb歌手](docs/vtb3.png) 
-```
-4: 获取帮助 -> vtbhelp
+3: 获取帮助 -> vtbhelp
 ```
 效果：  
 ![vtbhelp](docs/vtbhelp.png)  

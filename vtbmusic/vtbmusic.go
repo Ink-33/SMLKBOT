@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/tidwall/gjson"
 )
 
 type msgtype struct {
@@ -39,36 +41,10 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	case 1:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
-		list := GetVTBMusicList(mt.content)
-		var msgMake string
-		if list.Total == 0 {
-			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
-		} else {
-			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放"
-			counter++
-			w := new(waitingChan)
-			w.isNewRequest = true
-			w.RequestSenderID = MsgInfo.SenderID
-			w.MsgInfo = *MsgInfo
-			w.isTimeOut = false
-			waiting <- w
-			go waitingFunc(list, MsgInfo, BotConfig)
-		}
-		switch MsgInfo.MsgType {
-		case "private":
-			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
-			break
-		case "group":
-			if list.Total <= 30 {
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
-			} else {
-				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n━━━━━━━━━━━━━━\n请在原群聊发送歌曲对应序号即可播放"
-				msgtoGroup := "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + mt.content + "》共找到" + strconv.FormatInt(list.Total, 10) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信。"
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgtoGroup, BotConfig)
-				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
-			}
-			break
-		}
+		list1 := GetVTBMusicList(mt.content)
+		list2 := GetVTBVocalList(mt.content)
+		listmsg, listarray := listtoMsg(list1, list2)
+		sendmsg(MsgInfo, BotConfig, &listmsg, listarray, mt)
 		break
 	case 2:
 		log.SetPrefix("VTBMusic: ")
@@ -91,56 +67,17 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	case 4:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
-		var msgMake string
-		if mt.content == "" {
-			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n命令格式错误，请发送vtbhelp获取帮助"
-			cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
-			break
-		}
-		list := GetVTBVocalList(mt.content)
-		if list.Total == 0 {
-			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
-		} else {
-			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放"
-			counter++
-			w := new(waitingChan)
-			w.isNewRequest = true
-			w.RequestSenderID = MsgInfo.SenderID
-			w.MsgInfo = *MsgInfo
-			w.isTimeOut = false
-			waiting <- w
-			go waitingFunc(list, MsgInfo, BotConfig)
-		}
-		switch MsgInfo.MsgType {
-		case "private":
-			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
-			break
-		case "group":
-			if list.Total <= 30 {
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
-			} else {
-				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果:\n" + listtoMsg(list) + "\n━━━━━━━━━━━━━━\n请在原群聊发送歌曲对应序号即可播放"
-				msgtoGroup := "[CQ:at,qq=" + MsgInfo.SenderID + "]\n\"" + mt.content + "\"共找到" + strconv.FormatInt(list.Total, 10) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信。"
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgtoGroup, BotConfig)
-				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
-			}
-			break
-		}
-		break
-	case 5:
-		log.SetPrefix("VTBMusic: ")
-		log.Println("Known command:", mt.content)
 		list := GetVTBMusicDetail(mt.content)
 		var msgMake string
 		if list.Total == 0 {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nid:" + mt.content + "没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		} else {
-			info := getMusicDetail(list, 1)
+			info := getMusicDetail(list.Data, 1)
 			msgMake = "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
 		}
 		cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 		break
-	case 6:
+	case 5:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
 		switch MsgInfo.MsgType {
@@ -184,45 +121,42 @@ func msgHandler(msg string) (Msgtype *msgtype) {
 		mt.content = msg
 		return mt
 	}
-	if strings.HasPrefix(msg, "vtb歌手") {
-		if strings.HasPrefix(msg, "vtb歌手 ") {
-			mt.content = strings.Replace(msg, "vtb歌手 ", "", 1)
-		} else {
-			mt.content = strings.Replace(msg, "vtb歌手", "", 1)
-		}
-		mt.ctype = 4
-		return mt
-	}
+
 	if strings.HasPrefix(msg, "vtbid点歌") {
 		if strings.HasPrefix(msg, "vtbid点歌 ") {
 			mt.content = strings.Replace(msg, "vtbid点歌 ", "", 1)
 		} else {
 			mt.content = strings.Replace(msg, "vtbid点歌", "", 1)
 		}
-		mt.ctype = 5
+		mt.ctype = 4
 		return mt
 	}
 	if msg == "vtbhelp" {
-		mt.ctype = 6
+		mt.ctype = 5
 		mt.content = "Get help"
 		return mt
 	}
 	return mt
 }
 
-func listtoMsg(list *botstruct.VTBMusicList) string {
+func listtoMsg(list ...*botstruct.VTBMusicList) (ListMsg string, ListArray []gjson.Result) {
 	var q []string
-	for i, r := range list.Data {
-		t := strconv.Itoa(i+1) + "," + r.Get("vocal").String() + "-" + r.Get("name").String()
-		q = append(q, t)
-		if int64(i+1) == list.Total {
-			return strings.Join(q, "\n")
+	var listreturn []gjson.Result
+	for _, v := range list {
+		for i, r := range v.Data {
+			listreturn = append(listreturn, r.Get("@this"))
+			t := strconv.Itoa(i+1) + "," + r.Get("vocal").String() + "-" + r.Get("name").String()
+			q = append(q, t)
+			if int64(i+1) == v.Total {
+				break
+			}
 		}
 	}
-	return ""
+
+	return strings.Join(q, "\n"), listreturn
 }
 
-func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
+func waitingFunc(list []gjson.Result, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	go func(MsgInfo *botstruct.MsgInfo) {
 		time.Sleep(60 * time.Second)
 		wc := new(waitingChan)
@@ -244,7 +178,7 @@ func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotCo
 			if err != nil {
 				log.Fatalln(err)
 			}
-			if int64(index) <= list.Total && int64(index) > 0 {
+			if index <= len(list) && index > 0 {
 				if c.SenderID == MsgInfo.SenderID && c.MsgType == MsgInfo.MsgType {
 					switch c.MsgType {
 					case "private":
@@ -269,20 +203,20 @@ func waitingFunc(list *botstruct.VTBMusicList, MsgInfo *botstruct.MsgInfo, BotCo
 	}
 }
 
-func getMusicDetail(list *botstruct.VTBMusicList, index int) (info *botstruct.VTBMusicInfo) {
+func getMusicDetail(list []gjson.Result, index int) (info *botstruct.VTBMusicInfo) {
 	i := new(botstruct.VTBMusicInfo)
-	i.MusicID = list.Data[index-1].Get("Id").String()
-	i.MusicVocal = strings.ReplaceAll(list.Data[index-1].Get("vocal").String(), ",", "、")
-	i.MusicName = list.Data[index-1].Get("name").String()
-	if strings.Contains(list.Data[index-1].Get("CDN").String(), ":") {
+	i.MusicID = list[index-1].Get("Id").String()
+	i.MusicVocal = strings.ReplaceAll(list[index-1].Get("vocal").String(), ",", "、")
+	i.MusicName = list[index-1].Get("name").String()
+	if strings.Contains(list[index-1].Get("CDN").String(), ":") {
 		reg := regexp.MustCompile("(\\d+):(\\d+):(\\d+)")
-		match := reg.FindStringSubmatch(list.Data[index-1].Get("CDN").String())
-		i.Cover = GetVTBMusicCDN(match[1]) + list.Data[index-1].Get("img").String()
-		i.MusicURL = GetVTBMusicCDN(match[2]) + list.Data[index-1].Get("music").String()
+		match := reg.FindStringSubmatch(list[index-1].Get("CDN").String())
+		i.Cover = GetVTBMusicCDN(match[1]) + list[index-1].Get("img").String()
+		i.MusicURL = GetVTBMusicCDN(match[2]) + list[index-1].Get("music").String()
 	} else {
-		i.MusicCDN = GetVTBMusicCDN(list.Data[index-1].Get("CDN").String())
-		i.Cover = i.MusicCDN + list.Data[index-1].Get("img").String()
-		i.MusicURL = i.MusicCDN + list.Data[index-1].Get("music").String()
+		i.MusicCDN = GetVTBMusicCDN(list[index-1].Get("CDN").String())
+		i.Cover = i.MusicCDN + list[index-1].Get("img").String()
+		i.MusicURL = i.MusicCDN + list[index-1].Get("music").String()
 	}
 	return i
 }
@@ -296,4 +230,39 @@ func isNumber(str string) bool {
 		return result
 	}
 	return result
+}
+
+func sendmsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listmsg *string, listarray []gjson.Result, Msgtype *msgtype) {
+	var msgMake string
+	lens := len(listarray)
+	if lens == 0 {
+		msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
+	} else {
+		counter++
+		w := new(waitingChan)
+		w.isNewRequest = true
+		w.RequestSenderID = MsgInfo.SenderID
+		w.MsgInfo = *MsgInfo
+		w.isTimeOut = false
+		waiting <- w
+		go waitingFunc(listarray, MsgInfo, BotConfig)
+	}
+	switch MsgInfo.MsgType {
+	case "private":
+		if lens != 0 {
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listmsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放"
+		}
+		go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+		break
+	case "group":
+		if lens <= 15 {
+			go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+		} else {
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listmsg + "\n━━━━━━━━━━━━━━\n请在原群聊发送歌曲对应序号即可播放"
+			msgtoGroup := "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到" + strconv.Itoa(lens) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信。"
+			go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgtoGroup, BotConfig)
+			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+		}
+		break
+	}
 }
