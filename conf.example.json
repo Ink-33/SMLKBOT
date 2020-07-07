@@ -13,6 +13,10 @@
             "ListeningPort": 12345
         }
     },
+    "Tencent": {
+        "secretId": "",
+        "secretKey": ""
+    },
     "Feature": [
         {
             "Bilibili": true,

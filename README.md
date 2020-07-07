@@ -111,7 +111,15 @@ master代表机器人的所有者,拥有SmlkShell的最高权限
 }     
 ```
 要求与上述相同。
-
+#### 解析: Tencent部分
+```json
+"Tencent": {
+    "secretId": "",
+    "secretKey": ""
+}
+```
+模糊搜索功能已接入腾讯NLP,每日免费额度为50万此请求。请在此处填写您的腾讯云secretID和secretKey  
+目前NLP为**必选请求**，将在未来的更新中更改为可选项。
 #### 解析: HTTPServer部分
 ```json
 "HTTPServer": {
@@ -131,4 +139,5 @@ master代表机器人的所有者,拥有SmlkShell的最高权限
 `false`是禁用，`true`是启用。
 
 ## 更新计划
-Steam综合
+Steam综合  
+Bilibili综合
