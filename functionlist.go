@@ -11,3 +11,7 @@ func functionLoad() {
 	functionList["Bilibili"] = bilibili.Bilibili
 	functionList["VTBMusic"] = vtbmusic.VTBMusic
 }
+
+func functionReload() {
+	vtbmusic.Load()
+}

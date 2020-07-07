@@ -13,16 +13,6 @@ import (
 //Compile
 var date, version, commit string = "DevBuild", "DevBuild", "DevBuild"
 
-//Reload config.
-func Reload(MsgInfo *botstruct.MsgInfo, MasterID string) (result bool) {
-	result = false
-	if MsgInfo.SenderID == MasterID {
-		result = true
-		return
-	}
-	return
-}
-
 //SmlkShell is the shell of SMLKBOT
 func SmlkShell(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	if strings.HasPrefix(MsgInfo.Message, "<SMLK ") {

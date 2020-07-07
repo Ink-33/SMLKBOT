@@ -22,14 +22,10 @@ import (
 
 type functionFormat func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig)
 
-var configfile *string
 
-func init() {
-	configfile = cqfunction.ReadConfig()
-}
 
 func judgeandrun(name string, functionFormat functionFormat, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
-	config := gjson.Get(*configfile, "Feature.0").String()
+	config := gjson.Get(*cqfunction.ConfigFile, "Feature.0").String()
 	if gjson.Get(config, name).Bool() {
 		go functionFormat(MsgInfo, BotConfig)
 	}
@@ -62,7 +58,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(*configfile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
+		hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
 		hmacsh1.Reset()
 		hmacsh1.Write(body)
 		var signature string = strings.Replace(r.Header.Get("X-Signature"), "sha1=", "", 1)
@@ -78,14 +74,15 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 				var msgInfoTmp = MsgHandler(body)
 				msgInfoTmp.RobotID = rid
 				var bc = new(botstruct.BotConfig)
-				bc.HTTPAPIAddr = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
-				bc.HTTPAPIToken = gjson.Get(*configfile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
-				bc.MasterID = gjson.Get(*configfile, "CoolQ.Master").Array()
+				bc.HTTPAPIAddr = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
+				bc.HTTPAPIToken = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
+				bc.MasterID = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Master").Array()
 				log.SetPrefix("SMLKBOT: ")
 				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(msgInfoTmp, bc).RoleName)
 				if msgInfoTmp.Message == "<SMLK reload" {
 					if smlkshell.RoleHandler(msgInfoTmp, bc).RoleLevel == 3 {
-						configfile = cqfunction.ReadConfig()
+						cqfunction.ConfigFile = cqfunction.ReadConfig()
+						functionReload()
 						log.Println("Succeed.")
 						smlkshell.ShellLog(msgInfoTmp, bc, "succeed")
 					} else {
@@ -115,11 +112,12 @@ func closeSignalHandler() {
 
 func main() {
 	log.SetPrefix("SMLKBOT: ")
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	functionLoad()
 
 	closeSignalHandler()
-	path := gjson.Get(*configfile, "CoolQ.HTTPServer.ListeningPath").String()
-	port := gjson.Get(*configfile, "CoolQ.HTTPServer.ListeningPort").String()
+	path := gjson.Get(*cqfunction.ConfigFile, "CoolQ.HTTPServer.ListeningPath").String()
+	port := gjson.Get(*cqfunction.ConfigFile, "CoolQ.HTTPServer.ListeningPort").String()
 
 	log.Println("Powered by Ink33")
 	log.Println("Start listening", path, port)

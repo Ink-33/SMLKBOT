@@ -1,7 +1,6 @@
 package bilibili
 
 import (
-	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
 	"log"
 	"regexp"
@@ -14,9 +13,22 @@ const biliAuAPIAddr string = "https://www.bilibili.com/audio/music-service-c/web
 const biliAudioPlayURL string = "https://api.bilibili.com/audio/music-service-c/shareUrl/redirectHttp?songid="
 const biliAudioJumpURL string = "https://www.bilibili.com/audio/au"
 
+//Auinfo includes some basic info of a Au number.
+type Auinfo struct {
+	AuNumber   string
+	AuStatus   bool
+	AuMsg      string
+	AuJumpURL  string
+	AuCoverURL string
+	AuURL      string
+	AuTitle    string
+	AuDesp     string
+	IsTimeOut  bool
+}
+
 //GetAuInfo : Get Bilibili Audio info
-func GetAuInfo(au string) (Auinfo *botstruct.Auinfo) {
-	var ai = new(botstruct.Auinfo)
+func GetAuInfo(au string) (info *Auinfo) {
+	var ai = new(Auinfo)
 	reg := regexp.MustCompile("[0-9]+")
 
 	ai.AuNumber = strings.Join(reg.FindAllString(au, 1), "")

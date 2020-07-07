@@ -1,7 +1,6 @@
 package vtbmusic
 
 import (
-	"SMLKBOT/botstruct"
 	"SMLKBOT/cqfunction"
 	"encoding/json"
 	"log"
@@ -16,8 +15,8 @@ const vtbMusicDetailAPIAddr string = "https://api.smlk.org/Music_Manage/music_da
 const vtbMusicCDNDetailAPIAddr string = "https://api.smlk.org/CDN_Manage/storage_data/GetDataList"
 
 //GetVTBMusicList : Get VTBMusic Detail Info.
-func GetVTBMusicList(musicname string) (VTBMusicList *botstruct.VTBMusicList) {
-	ml := new(botstruct.VTBMusicList)
+func GetVTBMusicList(musicname string) (VTBMusicList *MusicList) {
+	ml := new(MusicList)
 	s := make(map[string]string)
 	s["condition"] = "name"
 	s["keyword"] = musicname
@@ -88,8 +87,8 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 }
 
 //GetVTBVocalList : Get VTB Detail Info.
-func GetVTBVocalList(vocalname string) (VTBMusicList *botstruct.VTBMusicList) {
-	ml := new(botstruct.VTBMusicList)
+func GetVTBVocalList(vocalname string) (VTBMusicList *MusicList) {
+	ml := new(MusicList)
 	s := make(map[string]string)
 	s["condition"] = "vocal"
 	s["keyword"] = vocalname
@@ -120,8 +119,8 @@ func GetVTBVocalList(vocalname string) (VTBMusicList *botstruct.VTBMusicList) {
 }
 
 //GetVTBMusicDetail : Get music info by using music id.
-func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *botstruct.VTBMusicList) {
-	ml := new(botstruct.VTBMusicList)
+func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
+	ml := new(MusicList)
 	postjson := vtbDetailJSON{
 		MusicID: VTBMusicID,
 	}

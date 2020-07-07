@@ -22,6 +22,13 @@ func (e *TimeOutError) Error() string {
 	return fmt.Sprint("Time out : " + e.Addr)
 }
 
+//ConfigFile : bot config file
+var ConfigFile *string
+
+func init() {
+	ConfigFile = ReadConfig()
+}
+
 //CQSendGroupMsg : Send Group message by using CoolQ HTTPAPI
 func CQSendGroupMsg(id, msg string, BotConfig *botstruct.BotConfig) {
 	//log.Println("cqFunctionGroup" + BotConfig.HTTPAPIAddr + "/send_group_msg?access_token=" + BotConfig.HTTPAPIToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
@@ -134,4 +141,9 @@ func ReadConfig() *string {
 	}
 	result := string(file)
 	return &result
+}
+
+//ReturnConfig : Return the config
+func ReturnConfig() *string {
+	return ConfigFile
 }
