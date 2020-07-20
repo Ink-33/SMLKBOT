@@ -9,40 +9,92 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-//Reverse proxy for VtbmusicAPI
-const vtbMusicSearchAPIAddr string = "https://api.smlk.org/Music_Manage/music_data/GetDataList"
-const vtbMusicDetailAPIAddr string = "https://api.smlk.org/Music_Manage/music_data/GetTheData"
-const vtbMusicCDNDetailAPIAddr string = "https://api.smlk.org/CDN_Manage/storage_data/GetDataList"
+//Reverse proxy for VtbmusicAPI: https://api.vtbmusic.com:60006/v1/
+const vtbMusicAPIProxy string = "https://api.smlk.org/v1/"
+
+var vtbMusicAPIMap map[string]string = make(map[string]string)
+
+func init() {
+	vtbMusicAPIMap["MusicList"] = "GetMusicList"
+	vtbMusicAPIMap["MusicData"] = "GetMusicData"
+	vtbMusicAPIMap["VtbsList"] = "GetVtbsList"
+	vtbMusicAPIMap["VtbsData"] = "GetVtbsData"
+	vtbMusicAPIMap["CDN"] = "GetCDNList"
+	vtbMusicAPIMap["HotList"] = "GetHotMusicList"
+}
+func getAPIAddr(APIName string) string {
+	return vtbMusicAPIProxy + vtbMusicAPIMap[APIName]
+}
 
 //GetVTBMusicList : Get VTBMusic Detail Info.
-func GetVTBMusicList(musicname string) (VTBMusicList *MusicList) {
+//	Method: MusicName,VtbName
+func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 	ml := new(MusicList)
-	s := make(map[string]string)
-	s["condition"] = "name"
-	s["keyword"] = musicname
-	postjson := vtbPOSTJSON{
-		Search:    s,
-		PageIndex: 1,
-		PageRows:  9999,
-	}
+	switch Method {
+	case "VtbName":
+		vl := GetVTBsList(Keyword)
+		vid := make([]string, 0)
+		for _, v := range vl.Data {
+			vid = append(vid, v.Get("Id").String())
+		}
+		for _, v := range vid {
+			s := make(map[string]string)
+			s["condition"] = "VocalId"
+			s["keyword"] = v
+			postjson := &vtbSearchJSON{
+				Search:    s,
+				PageIndex: 1,
+				PageRows:  9999,
+			}
+			p, err := json.Marshal(postjson)
+			if err != nil {
+				log.Fatalln(err)
+			}
+			result, err := cqfunction.WebPostJSONContent(getAPIAddr("MusicList"), string(p))
+			if err != nil {
+				_, ok := err.(*cqfunction.TimeOutError)
+				if ok {
+					log.Println(err.Error())
+					runtime.Goexit()
+				} else {
+					log.Fatalln(err)
+				}
+			}
+			tmp := gjson.GetBytes(result, "Data").Array()
+			for _, v2 := range tmp {
+				ml.Data = append(ml.Data, v2)
+			}
+			ml.Total = ml.Total + len(ml.Data)
+		}
+	default:
+		s := make(map[string]string)
+		s["condition"] = "OriginName"
+		s["keyword"] = Keyword
+		postjson := &vtbSearchJSON{
+			Search:    s,
+			PageIndex: 1,
+			PageRows:  9999,
+		}
 
-	p, err := json.Marshal(postjson)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	result, err := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
-	if err != nil {
-		_, ok := err.(*cqfunction.TimeOutError)
-		if ok {
-			log.Println(err.Error())
-			runtime.Goexit()
-		} else {
+		p, err := json.Marshal(postjson)
+		if err != nil {
 			log.Fatalln(err)
 		}
+
+		result, err := cqfunction.WebPostJSONContent(getAPIAddr("MusicList"), string(p))
+		if err != nil {
+			_, ok := err.(*cqfunction.TimeOutError)
+			if ok {
+				log.Println(err.Error())
+				runtime.Goexit()
+			} else {
+				log.Fatalln(err)
+			}
+		}
+		ml.Total = int(gjson.GetBytes(result, "Total").Int())
+		ml.Data = gjson.GetBytes(result, "Data").Array()
+		return ml
 	}
-	ml.Total = gjson.GetBytes(result, "Total").Int()
-	ml.Data = gjson.GetBytes(result, "Data").Array()
 	return ml
 }
 
@@ -63,7 +115,7 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 		log.Fatalln(err)
 	}
 	//log.Println(string(p))
-	result, err := cqfunction.WebPostJSONContent(vtbMusicCDNDetailAPIAddr, string(p))
+	result, err := cqfunction.WebPostJSONContent(getAPIAddr("CDN"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
@@ -86,13 +138,13 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 	return ""
 }
 
-//GetVTBVocalList : Get VTB Detail Info.
-func GetVTBVocalList(vocalname string) (VTBMusicList *MusicList) {
-	ml := new(MusicList)
+//GetVTBsList : Get VTB Detail Info.
+func GetVTBsList(VtbsName string) (VList *VtbsList) {
+	vl := new(VtbsList)
 	s := make(map[string]string)
-	s["condition"] = "vocal"
-	s["keyword"] = vocalname
-	postjson := vtbPOSTJSON{
+	s["condition"] = "ChineseName"
+	s["keyword"] = VtbsName
+	postjson := vtbSearchJSON{
 		Search:    s,
 		PageIndex: 1,
 		PageRows:  9999,
@@ -103,7 +155,7 @@ func GetVTBVocalList(vocalname string) (VTBMusicList *MusicList) {
 		log.Fatalln(err)
 	}
 
-	result, err := cqfunction.WebPostJSONContent(vtbMusicSearchAPIAddr, string(p))
+	result, err := cqfunction.WebPostJSONContent(getAPIAddr("VtbsList"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
@@ -113,15 +165,15 @@ func GetVTBVocalList(vocalname string) (VTBMusicList *MusicList) {
 			log.Fatalln(err)
 		}
 	}
-	ml.Total = gjson.GetBytes(result, "Total").Int()
-	ml.Data = gjson.GetBytes(result, "Data").Array()
-	return ml
+	vl.Data = gjson.GetBytes(result, "Data").Array()
+	vl.Total = len(vl.Data)
+	return vl
 }
 
 //GetVTBMusicDetail : Get music info by using music id.
 func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
 	ml := new(MusicList)
-	postjson := vtbDetailJSON{
+	postjson := vtbMusicData{
 		MusicID: VTBMusicID,
 	}
 	p, err := json.Marshal(postjson)
@@ -129,7 +181,7 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
 		log.Fatalln(err)
 	}
 
-	result, err := cqfunction.WebPostJSONContent(vtbMusicDetailAPIAddr, string(p))
+	result, err := cqfunction.WebPostJSONContent(getAPIAddr("MusicData"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
@@ -150,6 +202,34 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
 	return ml
 }
 
+//GetHotMusicList : Get the hot music.
+func GetHotMusicList() (VTBMusicList *MusicList) {
+	ml := new(MusicList)
+	postjson := vtbSearchJSON{
+		PageIndex: 1,
+		PageRows:  12,
+	}
+
+	p, err := json.Marshal(postjson)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	result, err := cqfunction.WebPostJSONContent(getAPIAddr("HotList"), string(p))
+	if err != nil {
+		_, ok := err.(*cqfunction.TimeOutError)
+		if ok {
+			log.Println(err.Error())
+			runtime.Goexit()
+		} else {
+			log.Fatalln(err)
+		}
+	}
+	ml.Total = 12
+	ml.Data = gjson.GetBytes(result, "Data").Array()
+	return ml
+}
+
 type vtbCDNJSON struct {
 	Search    map[string]string `json:"search"`
 	condition string
@@ -157,13 +237,17 @@ type vtbCDNJSON struct {
 	PageIndex int `json:"pageIndex"`
 	PageRows  int `json:"pageRows"`
 }
-type vtbPOSTJSON struct {
+type vtbSearchJSON struct {
 	Search    map[string]string `json:"search"`
 	condition string
 	keyword   string
 	PageIndex int `json:"pageIndex"`
 	PageRows  int `json:"pageRows"`
 }
-type vtbDetailJSON struct {
+type vtbMusicData struct {
 	MusicID string `json:"id"`
+}
+type vtbHotMusic struct {
+	PageIndex int `json:"pageIndex"`
+	PageRows  int `json:"pageRows"`
 }
