@@ -57,6 +57,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	case 1:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
+		go cqfunction.CQSendMsg(MsgInfo, "Searching...", BotConfig)
 		keywordjson := TenKeywordsExtraction(getNLPRequestString(mt.content))
 		keywordgjson := gjson.Get(keywordjson, "Response.Keywords")
 		if !keywordgjson.IsArray() {
@@ -297,34 +298,55 @@ func sendmsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listmsg
 		msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 	} else {
-		counter++
-		w := new(waitingChan)
-		w.isNewRequest = true
-		w.RequestSenderID = MsgInfo.SenderID
-		w.MsgInfo = *MsgInfo
-		w.isTimeOut = false
-		waiting <- w
-		go waitingFunc(listArray, MsgInfo, BotConfig)
-
 		switch MsgInfo.MsgType {
 		case "private":
-			if lens <= 200 {
+			if lens == 1 {
+				info := getMusicDetail(listArray, 1)
+				msgMake = "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+			} else if lens <= 200 {
 				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listmsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放"
-			}else{
+				counter++
+				w := new(waitingChan)
+				w.isNewRequest = true
+				w.RequestSenderID = MsgInfo.SenderID
+				w.MsgInfo = *MsgInfo
+				w.isTimeOut = false
+				waiting <- w
+				go waitingFunc(listArray, MsgInfo, BotConfig)
+			} else {
 				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到多达" + strconv.Itoa(lens) + "个结果,建议您更换关键词重试"
 			}
 			go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
 			break
 		case "group":
-			if lens <= 15 {
+			if lens == 1 {
+				info := getMusicDetail(listArray, 1)
+				msgMake = "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+			} else if lens <= 15 {
 				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listmsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放"
 				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+				counter++
+				w := new(waitingChan)
+				w.isNewRequest = true
+				w.RequestSenderID = MsgInfo.SenderID
+				w.MsgInfo = *MsgInfo
+				w.isTimeOut = false
+				waiting <- w
+				go waitingFunc(listArray, MsgInfo, BotConfig)
 			} else {
 				if lens <= 40 {
 					msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listmsg + "\n━━━━━━━━━━━━━━\n请在原群聊发送歌曲对应序号即可播放"
 					msgtoGroup = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到" + strconv.Itoa(lens) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信。"
 					go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
-
+					counter++
+					w := new(waitingChan)
+					w.isNewRequest = true
+					w.RequestSenderID = MsgInfo.SenderID
+					w.MsgInfo = *MsgInfo
+					w.isTimeOut = false
+					waiting <- w
+					go waitingFunc(listArray, MsgInfo, BotConfig)
 				} else {
 					msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + Msgtype.content + "》共找到多达" + strconv.Itoa(lens) + "个结果,建议您更换关键词重试或私聊BOT获取完整列表"
 					msgtoGroup = msgMake

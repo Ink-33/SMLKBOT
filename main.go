@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
@@ -21,8 +22,6 @@ import (
 )
 
 type functionFormat func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig)
-
-
 
 func judgeandrun(name string, functionFormat functionFormat, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	config := gjson.Get(*cqfunction.ConfigFile, "Feature.0").String()
@@ -115,6 +114,7 @@ func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	functionLoad()
 
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	closeSignalHandler()
 	path := gjson.Get(*cqfunction.ConfigFile, "CoolQ.HTTPServer.ListeningPath").String()
 	port := gjson.Get(*cqfunction.ConfigFile, "CoolQ.HTTPServer.ListeningPort").String()
