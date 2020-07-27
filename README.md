@@ -1,6 +1,12 @@
 # SMLKBOT
-SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人后端程序  
+[![Jenkins](https://img.shields.io/jenkins/build?jobUrl=https%3A%2F%2Feas.smlk.org%3A8443%2Fjob%2FSMLKBOT%2F&style=flat-square)](https://eas.smlk.org:8443/job/SMLKBOT/)
+[![GitHub issues](https://img.shields.io/github/issues/Ink-33/SMLKBOT?style=flat-square)](https://github.com/Ink-33/SMLKBOT/issues)
+[![GitHub forks](https://img.shields.io/github/forks/Ink-33/SMLKBOT?style=flat-square)](https://github.com/Ink-33/SMLKBOT/network)
+[![GitHub stars](https://img.shields.io/github/stars/Ink-33/SMLKBOT?style=flat-square)](https://github.com/Ink-33/SMLKBOT/stargazers)
+[![GitHub license](https://img.shields.io/github/license/Ink-33/SMLKBOT?style=flat-square)](https://github.com/Ink-33/SMLKBOT/blob/master/LICENSE)  
 
+SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人后端程序  
+获取Night Build请[点击这里](https://eas.smlk.org:8443/job/SMLKBOT/)
 ## 1,功能
 以下功能未特别说明的均已实装，并可以通过修改配置文件进行独立开关  
 
