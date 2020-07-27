@@ -33,9 +33,15 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 	switch Method {
 	case "VtbName":
 		vl := GetVTBsList(Keyword)
-		vid := make([]string, 0)
+		vidraw := make([]string, 0)
 		for _, v := range vl.Data {
-			vid = append(vid, v.Get("Id").String())
+			vidraw = append(vidraw, v.Get("Id").String())
+		}
+		var vid []string
+		if len(vidraw) > 3 {
+			vid = vidraw[0:2]
+		} else {
+			vid = vidraw
 		}
 		for _, v := range vid {
 			s := make(map[string]string)
