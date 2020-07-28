@@ -1,7 +1,7 @@
 package bilibili
 
 import (
-	"SMLKBOT/cqfunction"
+	"SMLKBOT/utils/cqfunction"
 	"log"
 	"regexp"
 	"strings"

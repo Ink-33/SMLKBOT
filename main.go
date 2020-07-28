@@ -1,9 +1,9 @@
 package main
 
 import (
-	"SMLKBOT/botstruct"
-	"SMLKBOT/cqfunction"
-	"SMLKBOT/smlkshell"
+	"SMLKBOT/data/botstruct"
+	"SMLKBOT/utils/cqfunction"
+	"SMLKBOT/utils/smlkshell"
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"

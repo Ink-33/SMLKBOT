@@ -1,7 +1,7 @@
 package cqfunction
 
 import (
-	"SMLKBOT/botstruct"
+	"SMLKBOT/data/botstruct"
 	"fmt"
 	"io/ioutil"
 	"log"

@@ -1,8 +1,8 @@
 package smlkshell
 
 import (
-	"SMLKBOT/botstruct"
-	"SMLKBOT/cqfunction"
+	"SMLKBOT/data/botstruct"
+	"SMLKBOT/utils/cqfunction"
 	"fmt"
 	"log"
 	"runtime"

@@ -1,7 +1,7 @@
 package vtbmusic
 
 import (
-	"SMLKBOT/cqfunction"
+	"SMLKBOT/utils/cqfunction"
 	"encoding/json"
 	"log"
 	"runtime"

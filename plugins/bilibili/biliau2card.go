@@ -1,8 +1,8 @@
 package bilibili
 
 import (
-	"SMLKBOT/botstruct"
-	"SMLKBOT/cqfunction"
+	"SMLKBOT/data/botstruct"
+	"SMLKBOT/utils/cqfunction"
 	"log"
 	"regexp"
 	"strings"

@@ -1,9 +1,9 @@
 package vtbmusic
 
 import (
-	"SMLKBOT/botstruct"
-	"SMLKBOT/cqfunction"
-	"SMLKBOT/help"
+	"SMLKBOT/data/botstruct"
+	"SMLKBOT/utils/cqfunction"
+	"SMLKBOT/data/helps"
 	"log"
 	"regexp"
 	"runtime"

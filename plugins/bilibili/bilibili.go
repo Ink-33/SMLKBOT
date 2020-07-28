@@ -1,7 +1,7 @@
 package bilibili
 
 import (
-	"SMLKBOT/botstruct"
+	"SMLKBOT/data/botstruct"
 )
 
 //Bilibili : The main function of bilibili

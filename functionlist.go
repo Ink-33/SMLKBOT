@@ -1,8 +1,8 @@
 package main
 
 import (
-	"SMLKBOT/bilibili"
-	"SMLKBOT/vtbmusic"
+	"SMLKBOT/plugins/bilibili"
+	"SMLKBOT/plugins/vtbmusic"
 )
 
 var functionList = make(map[string]functionFormat)
