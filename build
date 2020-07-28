@@ -1,2 +1,0 @@
-flags="-X 'SMLKBOT/smlkshell.date=`date`'"
-go build -x -ldflags "$flags"
