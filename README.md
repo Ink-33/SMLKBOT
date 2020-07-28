@@ -5,13 +5,25 @@
 [![GitHub stars](https://img.shields.io/github/stars/Ink-33/SMLKBOT?style=flat-square)](https://github.com/Ink-33/SMLKBOT/stargazers)
 [![GitHub license](https://img.shields.io/github/license/Ink-33/SMLKBOT?style=flat-square)](https://github.com/Ink-33/SMLKBOT/blob/master/LICENSE)  
 
-SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人后端程序  
-获取Night Build请[点击这里](https://eas.smlk.org:8443/job/SMLKBOT/)
-## 1,功能
+SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人后端程序，支持HTTP模式与SaaS模式。
+
+## 0.获取SMLKBOT
+您可以通过Github release获取稳定版，或获取[Night Build](https://eas.smlk.org:8443/job/SMLKBOT/)。  
+请注意: 构建好的SaaS软件包仅发布在[Night Build](https://eas.smlk.org:8443/job/SMLKBOT/).  
+不过，您可以选择自行构建，构建方式如下
+``` bash
+    bash build.sh [goal]
+```
+当前可用的`goal`:
+>HTTP   //用于普通HTTP监听模式  
+>TencentSCF//用于腾讯云SCF模式  
+
+更多SaaS服务商的支持待接入...
+## 1.功能
 以下功能未特别说明的均已实装，并可以通过修改配置文件进行独立开关  
 
 
-### 1.1, Bilibili
+### 1.1. Bilibili
 **注意：部分功能需要CQP**
 已实装：
 提取聊天中的au号,然后返回音频分享卡片。  
@@ -23,7 +35,7 @@ SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的�
 avid,bvid解析
 ep,cv解析
 
-### 1.2, VTBMusic
+### 1.2. VTBMusic
 **注意：本功能需要CQP**  
 VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐资源均来自于VTBMusic，请确认您要分享的歌曲已在VTBMusic正常上架。  
 
@@ -48,7 +60,7 @@ VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐
 
 *注:不显示图片是TIM特性,图片均能在移动端QQ正常显示*
 
-## 2,配置
+## 2.配置
 将`conf.example.json`重命名为`conf.json`  
 以下为完整示例文件  
 ```json

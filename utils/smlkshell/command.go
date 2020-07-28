@@ -12,7 +12,10 @@ import (
 
 //Compile
 var date, version, commit string = "DevBuild", "DevBuild", "DevBuild"
-var isSCF string = "false"
+
+//IsSCF is the mark to judge whether SMLKBOT is runing in SaaS mode.
+//	This varible should be set by using -ldflags while building.
+var IsSCF string = "false"
 var upTime string
 
 //SmlkShell is the shell of SMLKBOT
@@ -105,7 +108,7 @@ func ping(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 func GetStatus() string {
 	m := new(runtime.MemStats)
 	runtime.ReadMemStats(m)
-	return fmt.Sprintf("$SMLKBOT>\nBuild with: %s\nBuild Arch&OS: %s-%s\nBuild Date: %s\nUptime: %s\nVersion: %s\nCommit: %s\nisSCF: %s\nNumGoroutine: %d\nNumCPU: %d\nNumProcs: %d\nMemory: %dBytes\nNumGC: %d\nForceGC: %d\nLsatGC:%s", runtime.Version(), runtime.GOARCH, runtime.GOOS, date, upTime, version, commit, isSCF, runtime.NumGoroutine(), runtime.NumCPU(), runtime.GOMAXPROCS(0), m.Sys, m.NumGC, m.NumForcedGC, time.Unix(0, int64(m.LastGC)).Format("2006-01-02 15:04:05"))
+	return fmt.Sprintf("$SMLKBOT>\nBuild with: %s\nBuild Arch&OS: %s-%s\nBuild Date: %s\nUptime: %s\nVersion: %s\nCommit: %s\nisSCF: %s\nNumGoroutine: %d\nNumCPU: %d\nNumProcs: %d\nMemory: %dBytes\nNumGC: %d\nForceGC: %d\nLsatGC:%s", runtime.Version(), runtime.GOARCH, runtime.GOOS, date, upTime, version, commit, IsSCF, runtime.NumGoroutine(), runtime.NumCPU(), runtime.GOMAXPROCS(0), m.Sys, m.NumGC, m.NumForcedGC, time.Unix(0, int64(m.LastGC)).Format("2006-01-02 15:04:05"))
 }
 
 func init() {
