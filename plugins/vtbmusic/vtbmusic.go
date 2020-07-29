@@ -19,28 +19,6 @@ type msgType struct {
 	ctype   int
 }
 
-//MusicInfo includes the info of a music.
-type MusicInfo struct {
-	MusicName  string
-	MusicID    string
-	MusicVocal string
-	Cover      string
-	MusicURL   string
-	MusicCDN   string
-}
-
-//MusicList includes the result of searching for musics.
-type MusicList struct {
-	Total int
-	Data  []gjson.Result
-}
-
-//VtbsList includes the result of searching for Vtbs.
-type VtbsList struct {
-	Total int
-	Data  []gjson.Result
-}
-
 var waiting = make(chan *waitingChan, 500)
 var counter int = 0
 
