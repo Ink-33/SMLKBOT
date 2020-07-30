@@ -7,11 +7,8 @@ import (
 
 var functionList = make(map[string]functionFormat)
 
-func functionLoad() {
+func init() {
 	functionList["Bilibili"] = bilibili.Bilibili
 	functionList["VTBMusic"] = vtbmusic.VTBMusic
 }
 
-func functionReload() {
-	vtbmusic.Load()
-}

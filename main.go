@@ -79,20 +79,9 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 				bc.MasterID = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Master").Array()
 				log.SetPrefix("SMLKBOT: ")
 				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(msgInfoTmp, bc).RoleName)
-				if msgInfoTmp.Message == "<SMLK reload" {
-					if smlkshell.RoleHandler(msgInfoTmp, bc).RoleLevel == 3 {
-						cqfunction.ConfigFile = cqfunction.ReadConfig()
-						functionReload()
-						log.Println("Succeed.")
-						smlkshell.ShellLog(msgInfoTmp, bc, "succeed")
-					} else {
-						smlkshell.ShellLog(msgInfoTmp, bc, "deny")
-					}
-				} else {
-					smlkshell.SmlkShell(msgInfoTmp, bc)
-					for k, v := range functionList {
-						go judgeandrun(k, v, msgInfoTmp, bc)
-					}
+				smlkshell.SmlkShell(msgInfoTmp, bc)
+				for k, v := range functionList {
+					go judgeandrun(k, v, msgInfoTmp, bc)
 				}
 			}
 		}
@@ -168,7 +157,6 @@ func newHTTPServer() {
 func main() {
 	log.SetPrefix("SMLKBOT: ")
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-	functionLoad()
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 

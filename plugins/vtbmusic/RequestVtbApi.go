@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"log"
 	"runtime"
-
-	"github.com/tidwall/gjson"
 )
 
 /*
@@ -38,7 +36,7 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 		vl := GetVTBsList(Keyword)
 		vidraw := make([]string, 0)
 		for _, v := range vl.Data {
-			vidraw = append(vidraw, v.Get("Id").String())
+			vidraw = append(vidraw, v.ID)
 		}
 		var vid []string
 		if len(vidraw) > 3 {
@@ -69,7 +67,9 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 					log.Fatalln(err)
 				}
 			}
-			tmp := gjson.GetBytes(result, "Data").Array()
+			decode := new(getMusicList)
+			json.Unmarshal(result, decode)
+			tmp := decode.Data
 			for _, v2 := range tmp {
 				ml.Data = append(ml.Data, v2)
 			}
@@ -100,8 +100,15 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 				log.Fatalln(err)
 			}
 		}
-		ml.Total = int(gjson.GetBytes(result, "Total").Int())
-		ml.Data = gjson.GetBytes(result, "Data").Array()
+		decode := new(getMusicList)
+		err = json.Unmarshal(result, decode)
+		if err != nil {
+			ml.Total = -1
+			log.Println(err)
+			return ml
+		}
+		ml.Total = decode.Total
+		ml.Data = decode.Data
 		return ml
 	}
 	return ml
@@ -134,12 +141,17 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 			log.Fatalln(err)
 		}
 	}
-	//log.Println(string(result))
-	if gjson.GetBytes(result, "Data").Value() != nil {
+	decode := new(getCDNList)
+	err = json.Unmarshal(result, decode)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	if decode.Data != nil {
 		var addr string
-		for _, r := range gjson.GetBytes(result, "Data").Array() {
-			if r.Get("name").String() == keyword {
-				addr = r.Get("url").String()
+		for _, r := range decode.Data {
+			if r.Name == keyword {
+				addr = r.URL
 				return addr
 			}
 		}
@@ -174,7 +186,9 @@ func GetVTBsList(VtbsName string) (VList *VtbsList) {
 			log.Fatalln(err)
 		}
 	}
-	vl.Data = gjson.GetBytes(result, "Data").Array()
+	decode:= new(getVtbsList)
+	err = json.Unmarshal(result,decode)
+	vl.Data = decode.Data
 	vl.Total = len(vl.Data)
 	return vl
 }
@@ -200,10 +214,16 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
 			log.Fatalln(err)
 		}
 	}
-	if gjson.GetBytes(result, "Data").Value() != nil {
-		gr := make([]gjson.Result, 1)
-		gr[0] = gjson.GetBytes(result, "Data|@this")
-		ml.Data = gr
+	decode := new(getMusicData)
+	err = json.Unmarshal(result, decode)
+	if err != nil {
+		ml.Total = -1
+		return ml
+	}
+	if decode.getMusicListData != nil {
+		dataArray := make([]getMusicListData, 0)
+		dataArray = append(dataArray, *decode.getMusicListData)
+		ml.Data = dataArray
 		ml.Total = 1
 		return ml
 	}
@@ -234,8 +254,14 @@ func GetHotMusicList() (VTBMusicList *MusicList) {
 			log.Fatalln(err)
 		}
 	}
+	decode := new(getMusicList)
+	err = json.Unmarshal(result, decode)
+	if err != nil {
+		ml.Total = -1
+		return ml
+	}
 	ml.Total = 12
-	ml.Data = gjson.GetBytes(result, "Data").Array()
+	ml.Data = decode.Data
 	return ml
 }
 

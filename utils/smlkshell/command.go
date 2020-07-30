@@ -4,7 +4,6 @@ import (
 	"SMLKBOT/data/botstruct"
 	"SMLKBOT/utils/cqfunction"
 	"fmt"
-	"log"
 	"runtime"
 	"strings"
 	"time"
@@ -15,38 +14,8 @@ var date, version, commit string = "DevBuild", "DevBuild", "DevBuild"
 
 //IsSCF is the mark to judge whether SMLKBOT is runing in SaaS mode.
 //	This varible should be set by using -ldflags while building.
-var IsSCF string = "false"
+var IsSCF string
 var upTime string
-
-//SmlkShell is the shell of SMLKBOT
-func SmlkShell(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
-	if strings.HasPrefix(MsgInfo.Message, "<SMLK ") {
-		log.Println("Known command: SmlkShell")
-		switch MsgInfo.Message {
-		case "<SMLK status":
-			if RoleHandler(MsgInfo, BotConfig).RoleLevel >= 1 {
-				msgMake := GetStatus()
-				ShellLog(MsgInfo, BotConfig, msgMake)
-			} else {
-				ShellLog(MsgInfo, BotConfig, "deny")
-			}
-			break
-		case "<SMLK gc":
-			if RoleHandler(MsgInfo, BotConfig).RoleLevel == 3 {
-				runtime.GC()
-				ShellLog(MsgInfo, BotConfig, "succeed")
-			} else {
-				ShellLog(MsgInfo, BotConfig, "deny")
-			}
-			break
-		case "<SMLK ping":
-			go ping(MsgInfo, BotConfig)
-			break
-		default:
-			ShellLog(MsgInfo, BotConfig, "notfound")
-		}
-	}
-}
 
 //RoleHandler : Fechting user's role.
 func RoleHandler(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) (role *botstruct.Role) {
@@ -77,6 +46,10 @@ func RoleHandler(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) (ro
 }
 
 //ShellLog : Send execute result to QQ
+//	succeed
+//	deny
+//	disabled
+//	notfonud
 func ShellLog(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, result string) {
 	var msgMake string
 	switch result {
@@ -89,7 +62,7 @@ func ShellLog(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, result
 	case "disabled":
 		msgMake = "$SmlkShell> disabled."
 	case "notfound":
-		msgMake = fmt.Sprintf("$SmlkShell> %s: command not found", strings.Replace(MsgInfo.Message, "<SMLK ", "", 1))
+		msgMake = fmt.Sprintf("$SmlkShell> %s: command not found", strings.Replace(MsgInfo.Message, prefix, "", 1))
 		break
 	default:
 		msgMake = result
@@ -99,12 +72,55 @@ func ShellLog(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, result
 	}
 }
 
-func ping(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
+func ping(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
 	cost := time.Now().Unix() - MsgInfo.TimeStamp
+	if len(msgArray) != 1 {
+		ShellLog(MsgInfo, BotConfig, "notfound")
+		return
+	}
 	ShellLog(MsgInfo, BotConfig, fmt.Sprintf("本次请求耗时:%d秒", cost))
 }
 
-//GetStatus : Get program status
+func status(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
+	if RoleHandler(MsgInfo, BotConfig).RoleLevel >= 1 {
+		if len(msgArray) != 1 {
+			ShellLog(MsgInfo, BotConfig, "notfound")
+			return
+		}
+		msgMake := GetStatus()
+		ShellLog(MsgInfo, BotConfig, msgMake)
+	} else {
+		ShellLog(MsgInfo, BotConfig, "deny")
+	}
+}
+
+func gc(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
+	if RoleHandler(MsgInfo, BotConfig).RoleLevel >= 3 {
+		if len(msgArray) != 1 {
+			ShellLog(MsgInfo, BotConfig, "notfound")
+			return
+		}
+		runtime.GC()
+		ShellLog(MsgInfo, BotConfig, "succeed")
+	} else {
+		ShellLog(MsgInfo, BotConfig, "deny")
+	}
+}
+func reload(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
+	if RoleHandler(MsgInfo, BotConfig).RoleLevel == 3 {
+		if len(msgArray) != 1 {
+			ShellLog(MsgInfo, BotConfig, "notfound")
+			return
+		}
+		cqfunction.ConfigFile = cqfunction.ReadConfig()
+		functionReload()
+		ShellLog(MsgInfo, BotConfig, "succeed")
+	} else {
+		ShellLog(MsgInfo, BotConfig, "deny")
+	}
+}
+
+//GetStatus : Get a string for program status
 func GetStatus() string {
 	m := new(runtime.MemStats)
 	runtime.ReadMemStats(m)

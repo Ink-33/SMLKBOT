@@ -2,8 +2,8 @@ package vtbmusic
 
 import (
 	"SMLKBOT/data/botstruct"
-	"SMLKBOT/utils/cqfunction"
 	"SMLKBOT/data/helps"
+	"SMLKBOT/utils/cqfunction"
 	"log"
 	"regexp"
 	"runtime"
@@ -48,6 +48,11 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		if !keywordgjson.IsArray() {
 			list1 := GetVTBMusicList(mt.content, "MusicName")
 			list2 := GetVTBMusicList(mt.content, "VtbName")
+			if list1.Total == -1 || list2.Total == -1 {
+				msgMake := "An unexpected error occored while fetching data, please check console."
+				cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
+				return
+			}
 			listMsg, ListArray := listToMsg(list1, list2)
 			if len(ListArray) == 0 {
 				list := GetHotMusicList()
@@ -73,7 +78,11 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		log.Println("Known command: Get quantity of music.")
 		list := GetVTBMusicList(mt.content, "MusicName")
 		var msgMake string
-		msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nVTBMusic 当前已收录歌曲 " + strconv.Itoa(list.Total) + "首。获取使用帮助请发送vtbhelp"
+		if list.Total == -1 {
+			msgMake = "An unexpected error occored while fetching data, please check console."
+		} else {
+			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nVTBMusic 当前已收录歌曲 " + strconv.Itoa(list.Total) + "首。获取使用帮助请发送vtbhelp"
+		}
 		cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 		break
 	case 3:
@@ -91,7 +100,9 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		log.Println("Known command:", mt.content)
 		list := GetVTBMusicDetail(mt.content)
 		var msgMake string
-		if list.Total == 0 {
+		if list.Total == -1 {
+			msgMake = "An unexpected error occored while fetching data, please check console."
+		} else if list.Total == 0 {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nid:" + mt.content + "没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		} else {
 			info := getMusicDetail(list.Data, 1)
@@ -161,13 +172,13 @@ func msgHandler(msg string) (MsgType *msgType) {
 	return mt
 }
 
-func listToMsg(list ...*MusicList) (listMsg *string, ListArray []gjson.Result) {
+func listToMsg(list ...*MusicList) (listMsg *string, ListArray []getMusicListData) {
 	var q []string
-	var listReturn []gjson.Result
+	var listReturn []getMusicListData
 	for _, v := range list {
 		for i, r := range v.Data {
-			listReturn = append(listReturn, r.Get("@this"))
-			t := strconv.Itoa(i+1) + "," + r.Get("VocalName").String() + "-" + r.Get("OriginName").String()
+			listReturn = append(listReturn, r)
+			t := strconv.Itoa(i+1) + "," + r.VocalName + "-" + r.OriginName
 			q = append(q, t)
 		}
 	}
@@ -175,7 +186,7 @@ func listToMsg(list ...*MusicList) (listMsg *string, ListArray []gjson.Result) {
 	return &msg, listReturn
 }
 
-func waitingFunc(list []gjson.Result, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
+func waitingFunc(list []getMusicListData, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	go func(MsgInfo *botstruct.MsgInfo) {
 		time.Sleep(60 * time.Second)
 		wc := new(waitingChan)
@@ -222,20 +233,20 @@ func waitingFunc(list []gjson.Result, MsgInfo *botstruct.MsgInfo, BotConfig *bot
 	}
 }
 
-func getMusicDetail(list []gjson.Result, index int) (info *MusicInfo) {
+func getMusicDetail(list []getMusicListData, index int) (info *MusicInfo) {
 	i := new(MusicInfo)
-	i.MusicID = list[index-1].Get("Id").String()
-	i.MusicVocal = strings.ReplaceAll(list[index-1].Get("VocalName").String(), ",", "、")
-	i.MusicName = list[index-1].Get("OriginName").String()
-	if strings.Contains(list[index-1].Get("CDN").String(), ":") {
+	i.MusicID = list[index-1].ID
+	i.MusicVocal = strings.ReplaceAll(list[index-1].VocalName, ",", "、")
+	i.MusicName = list[index-1].OriginName
+	if strings.Contains(list[index-1].CDN, ":") {
 		reg := regexp.MustCompile("(\\d+):(\\d+):(\\d+)")
-		match := reg.FindStringSubmatch(list[index-1].Get("CDN").String())
-		i.Cover = GetVTBMusicCDN(match[1]) + list[index-1].Get("CoverImg").String()
-		i.MusicURL = GetVTBMusicCDN(match[2]) + list[index-1].Get("Music").String()
+		match := reg.FindStringSubmatch(list[index-1].CDN)
+		i.Cover = GetVTBMusicCDN(match[1]) + list[index-1].CoverImg
+		i.MusicURL = GetVTBMusicCDN(match[2]) + list[index-1].Music
 	} else {
-		i.MusicCDN = GetVTBMusicCDN(list[index-1].Get("CDN").String())
-		i.Cover = i.MusicCDN + list[index-1].Get("CoverImg").String()
-		i.MusicURL = i.MusicCDN + list[index-1].Get("Music").String()
+		i.MusicCDN = GetVTBMusicCDN(list[index-1].CDN)
+		i.Cover = i.MusicCDN + list[index-1].CoverImg
+		i.MusicURL = i.MusicCDN + list[index-1].Music
 	}
 	return i
 }
@@ -251,11 +262,11 @@ func isNumber(str string) bool {
 	return result
 }
 
-func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []gjson.Result) {
+func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []getMusicListData) {
 	list1 := GetVTBMusicList(keywordArray[0].Get("Word").String(), "MusicName")
 	list2 := GetVTBMusicList(keywordArray[0].Get("Word").String(), "VtbName")
 	_, ListArray := listToMsg(list1, list2)
-	var nlpArray []gjson.Result
+	var nlpArray []getMusicListData
 	var nlpMsgArray []string
 	for k1, v1 := range keywordArray {
 		if len(keywordArray) == 1 {
@@ -266,14 +277,14 @@ func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []gjson
 		case 1:
 			reg := regexp.MustCompile("(?i)(" + v1.Get("Word").String() + ")")
 			for _, v2 := range ListArray {
-				if reg.MatchString(v2.Get("VocalName").String()) || reg.MatchString(v2.Get("OriginName").String()) {
+				if reg.MatchString(v2.VocalName) || reg.MatchString(v2.OriginName) {
 					nlpArray = append(nlpArray, v2)
 				}
 			}
 		default:
 			reg := regexp.MustCompile("(?i)(" + v1.Get("Word").String() + ")")
 			for _, v2 := range nlpArray {
-				if reg.MatchString(v2.Get("VocalName").String()) || reg.MatchString(v2.Get("OriginName").String()) {
+				if reg.MatchString(v2.VocalName) || reg.MatchString(v2.OriginName) {
 					nlpArray = append(nlpArray, v2)
 				}
 			}
@@ -281,14 +292,14 @@ func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []gjson
 
 	}
 	for k, v := range nlpArray {
-		tmp := strconv.Itoa(k+1) + "," + v.Get("VocalName").String() + "-" + v.Get("OriginName").String()
+		tmp := strconv.Itoa(k+1) + "," + v.VocalName + "-" + v.OriginName
 		nlpMsgArray = append(nlpMsgArray, tmp)
 	}
 	msg := strings.Join(nlpMsgArray, "\n")
 	return &msg, nlpArray
 }
 
-func sendMsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listMsg *string, ListArray []gjson.Result, MsgType *msgType, isHotMusic bool) {
+func sendMsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listMsg *string, ListArray []getMusicListData, MsgType *msgType, isHotMusic bool) {
 	var msgMake string
 	var msgtoGroup string
 	lens := len(ListArray)
