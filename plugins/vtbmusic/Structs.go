@@ -2,15 +2,17 @@ package vtbmusic
 
 //Translate json to go by using https://www.sojson.com/json/json2go.html
 
-//getMusicList also can be used as GetHotMusicList
-type getMusicList struct {
+//GetMusicList also can be used as GetHotMusicList
+type GetMusicList struct {
 	Total     int                `json:"total"`
-	Data      []getMusicListData `json:"data"`
+	Data      []GetMusicListData `json:"data"`
 	Success   bool               `json:"success"`
 	ErrorCode int                `json:"errorCode"`
 	Msg       string             `json:"msg"`
 }
-type getMusicListData struct {
+
+//GetMusicListData is used for json Unmarshal
+type GetMusicListData struct {
 	ID              string `json:"id"`
 	CreateTime      string `json:"createTime"`
 	PublishTime     string `json:"publishTime"`
@@ -39,7 +41,9 @@ type getMusicListData struct {
 		Originlang string `json:"originlang"`
 	} `json:"vocalList"`
 }
-type getCDNList struct {
+
+//GetCDNList is used for json Unmarshal
+type GetCDNList struct {
 	Total int `json:"total"`
 	Data  []struct {
 		ID         string `json:"id"`
@@ -53,20 +57,26 @@ type getCDNList struct {
 	ErrorCode int    `json:"errorCode"`
 	Msg       string `json:"msg"`
 }
-type getMusicData struct {
-	*getMusicListData `json:"Data"`
+
+//GetMusicData is used for json Unmarshal
+type GetMusicData struct {
+	*GetMusicListData `json:"Data"`
 	Success           bool   `json:"Success"`
 	ErrorCode         int    `json:"ErrorCode"`
 	Msg               string `json:"Msg"`
 }
-type getVtbsList struct {
+
+//GetVtbsList is used for json Unmarshal
+type GetVtbsList struct {
 	Total     int           `json:"total"`
-	Data      []getVtbsData `json:"data"`
+	Data      []GetVtbsData `json:"data"`
 	Success   bool          `json:"success"`
 	ErrorCode int           `json:"errorCode"`
 	Msg       string        `json:"msg"`
 }
-type getVtbsData struct {
+
+//GetVtbsData is used for json Unmarshal
+type GetVtbsData struct {
 	ID           string `json:"id"`
 	CreateTime   string `json:"createTime"`
 	CreatorID    string `json:"creatorId"`
@@ -97,11 +107,15 @@ type MusicInfo struct {
 //MusicList includes the result of searching for musics.
 type MusicList struct {
 	Total int
-	Data  []getMusicListData
+	Data  []GetMusicListData
 }
 
 //VtbsList includes the result of searching for Vtbs.
 type VtbsList struct {
 	Total int
-	Data  []getVtbsData
+	Data  []GetVtbsData
+}
+
+type cdnResult interface {
+	match(string) string
 }

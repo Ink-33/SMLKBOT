@@ -67,7 +67,7 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 					log.Fatalln(err)
 				}
 			}
-			decode := new(getMusicList)
+			decode := new(GetMusicList)
 			json.Unmarshal(result, decode)
 			tmp := decode.Data
 			for _, v2 := range tmp {
@@ -100,7 +100,7 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 				log.Fatalln(err)
 			}
 		}
-		decode := new(getMusicList)
+		decode := new(GetMusicList)
 		err = json.Unmarshal(result, decode)
 		if err != nil {
 			ml.Total = -1
@@ -115,7 +115,7 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 }
 
 //GetVTBMusicCDN : Get VTBMusic CDN Detail Info
-func GetVTBMusicCDN(keyword string) (addr string) {
+func GetVTBMusicCDN(keyword string) (cdn *GetCDNList) {
 	//log.Println(keyword)
 	s := make(map[string]string)
 	s["condition"] = "name"
@@ -141,22 +141,13 @@ func GetVTBMusicCDN(keyword string) (addr string) {
 			log.Fatalln(err)
 		}
 	}
-	decode := new(getCDNList)
+	decode := new(GetCDNList)
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		log.Println(err)
-		return ""
+		return nil
 	}
-	if decode.Data != nil {
-		var addr string
-		for _, r := range decode.Data {
-			if r.Name == keyword {
-				addr = r.URL
-				return addr
-			}
-		}
-	}
-	return ""
+	return decode
 }
 
 //GetVTBsList : Get VTB Detail Info.
@@ -186,8 +177,8 @@ func GetVTBsList(VtbsName string) (VList *VtbsList) {
 			log.Fatalln(err)
 		}
 	}
-	decode:= new(getVtbsList)
-	err = json.Unmarshal(result,decode)
+	decode := new(GetVtbsList)
+	err = json.Unmarshal(result, decode)
 	vl.Data = decode.Data
 	vl.Total = len(vl.Data)
 	return vl
@@ -214,15 +205,15 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
 			log.Fatalln(err)
 		}
 	}
-	decode := new(getMusicData)
+	decode := new(GetMusicData)
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		ml.Total = -1
 		return ml
 	}
-	if decode.getMusicListData != nil {
-		dataArray := make([]getMusicListData, 0)
-		dataArray = append(dataArray, *decode.getMusicListData)
+	if decode.GetMusicListData != nil {
+		dataArray := make([]GetMusicListData, 0)
+		dataArray = append(dataArray, *decode.GetMusicListData)
 		ml.Data = dataArray
 		ml.Total = 1
 		return ml
@@ -254,7 +245,7 @@ func GetHotMusicList() (VTBMusicList *MusicList) {
 			log.Fatalln(err)
 		}
 	}
-	decode := new(getMusicList)
+	decode := new(GetMusicList)
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		ml.Total = -1
@@ -263,6 +254,19 @@ func GetHotMusicList() (VTBMusicList *MusicList) {
 	ml.Total = 12
 	ml.Data = decode.Data
 	return ml
+}
+
+func (cdn *GetCDNList) match(keyword string) (addr string) {
+	if cdn.Data != nil {
+		var addr string
+		for _, r := range cdn.Data {
+			if r.Name == keyword {
+				addr = r.URL
+				return addr
+			}
+		}
+	}
+	return ""
 }
 
 type vtbCDNJSON struct {

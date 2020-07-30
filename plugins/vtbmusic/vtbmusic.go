@@ -172,9 +172,9 @@ func msgHandler(msg string) (MsgType *msgType) {
 	return mt
 }
 
-func listToMsg(list ...*MusicList) (listMsg *string, ListArray []getMusicListData) {
+func listToMsg(list ...*MusicList) (listMsg *string, ListArray []GetMusicListData) {
 	var q []string
-	var listReturn []getMusicListData
+	var listReturn []GetMusicListData
 	for _, v := range list {
 		for i, r := range v.Data {
 			listReturn = append(listReturn, r)
@@ -186,7 +186,7 @@ func listToMsg(list ...*MusicList) (listMsg *string, ListArray []getMusicListDat
 	return &msg, listReturn
 }
 
-func waitingFunc(list []getMusicListData, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
+func waitingFunc(list []GetMusicListData, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	go func(MsgInfo *botstruct.MsgInfo) {
 		time.Sleep(60 * time.Second)
 		wc := new(waitingChan)
@@ -233,18 +233,19 @@ func waitingFunc(list []getMusicListData, MsgInfo *botstruct.MsgInfo, BotConfig 
 	}
 }
 
-func getMusicDetail(list []getMusicListData, index int) (info *MusicInfo) {
+func getMusicDetail(list []GetMusicListData, index int) (info *MusicInfo) {
 	i := new(MusicInfo)
 	i.MusicID = list[index-1].ID
 	i.MusicVocal = strings.ReplaceAll(list[index-1].VocalName, ",", "、")
 	i.MusicName = list[index-1].OriginName
+	cdn := GetVTBMusicCDN("")
 	if strings.Contains(list[index-1].CDN, ":") {
 		reg := regexp.MustCompile("(\\d+):(\\d+):(\\d+)")
 		match := reg.FindStringSubmatch(list[index-1].CDN)
-		i.Cover = GetVTBMusicCDN(match[1]) + list[index-1].CoverImg
-		i.MusicURL = GetVTBMusicCDN(match[2]) + list[index-1].Music
+		i.Cover = cdn.match(match[1]) + list[index-1].CoverImg
+		i.MusicURL = cdn.match(match[2]) + list[index-1].Music
 	} else {
-		i.MusicCDN = GetVTBMusicCDN(list[index-1].CDN)
+		i.MusicCDN = cdn.match(list[index-1].CDN)
 		i.Cover = i.MusicCDN + list[index-1].CoverImg
 		i.MusicURL = i.MusicCDN + list[index-1].Music
 	}
@@ -262,11 +263,11 @@ func isNumber(str string) bool {
 	return result
 }
 
-func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []getMusicListData) {
+func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []GetMusicListData) {
 	list1 := GetVTBMusicList(keywordArray[0].Get("Word").String(), "MusicName")
 	list2 := GetVTBMusicList(keywordArray[0].Get("Word").String(), "VtbName")
 	_, ListArray := listToMsg(list1, list2)
-	var nlpArray []getMusicListData
+	var nlpArray []GetMusicListData
 	var nlpMsgArray []string
 	for k1, v1 := range keywordArray {
 		if len(keywordArray) == 1 {
@@ -299,7 +300,7 @@ func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []getMu
 	return &msg, nlpArray
 }
 
-func sendMsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listMsg *string, ListArray []getMusicListData, MsgType *msgType, isHotMusic bool) {
+func sendMsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listMsg *string, ListArray []GetMusicListData, MsgType *msgType, isHotMusic bool) {
 	var msgMake string
 	var msgtoGroup string
 	lens := len(ListArray)
