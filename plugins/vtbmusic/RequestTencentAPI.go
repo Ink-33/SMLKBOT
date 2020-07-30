@@ -68,3 +68,19 @@ func getNLPRequestString(params string) (result string) {
 type nlpRequest struct {
 	KeyWord string `json:"Text"`
 }
+
+type nlpResult struct {
+	Response struct {
+		Keywords []nlpRequestKeywords `json:"Keywords"`
+		Error    *struct {
+			Code    string `json:"Code"`
+			Message string `json:"Message"`
+		} `json:"Error"`
+		RequestID string `json:"RequestId"`
+	} `json:"Response"`
+}
+
+type nlpRequestKeywords struct {
+	Score int    `json:"Score"`
+	Word  string `json:"Word"`
+}

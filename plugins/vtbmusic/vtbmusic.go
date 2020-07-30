@@ -4,14 +4,13 @@ import (
 	"SMLKBOT/data/botstruct"
 	"SMLKBOT/data/helps"
 	"SMLKBOT/utils/cqfunction"
+	"encoding/json"
 	"log"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/tidwall/gjson"
 )
 
 type msgType struct {
@@ -44,8 +43,16 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		log.Println("Known command:", mt.content)
 		go cqfunction.CQSendMsg(MsgInfo, "Searching...", BotConfig)
 		keywordjson := TenKeywordsExtraction(getNLPRequestString(mt.content))
-		keywordgjson := gjson.Get(keywordjson, "Response.Keywords")
-		if !keywordgjson.IsArray() {
+		keywordStruct := new(nlpResult)
+		err := json.Unmarshal([]byte(keywordjson), keywordStruct)
+		if err != nil {
+			log.Println(err)
+			msgMake := "An unexpected error occored while fetching data, please check console."
+			cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
+			return
+		}
+		if keywordStruct.Response.Error != nil {
+			log.Println("NLP:", keywordStruct.Response.Error.Message)
 			list1 := GetVTBMusicList(mt.content, "MusicName")
 			list2 := GetVTBMusicList(mt.content, "VtbName")
 			if list1.Total == -1 || list2.Total == -1 {
@@ -62,7 +69,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 				sendMsg(MsgInfo, BotConfig, listMsg, ListArray, mt, false)
 			}
 		} else {
-			keywordArray := keywordgjson.Array()
+			keywordArray := keywordStruct.Response.Keywords
 			nlpMsg, nlpArray := nlpListToMsg(keywordArray)
 			if len(nlpArray) == 0 {
 				list := GetHotMusicList()
@@ -263,9 +270,9 @@ func isNumber(str string) bool {
 	return result
 }
 
-func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []GetMusicListData) {
-	list1 := GetVTBMusicList(keywordArray[0].Get("Word").String(), "MusicName")
-	list2 := GetVTBMusicList(keywordArray[0].Get("Word").String(), "VtbName")
+func nlpListToMsg(keywordArray []nlpRequestKeywords) (NLPMsg *string, NLPArray []GetMusicListData) {
+	list1 := GetVTBMusicList(keywordArray[0].Word, "MusicName")
+	list2 := GetVTBMusicList(keywordArray[0].Word, "VtbName")
 	_, ListArray := listToMsg(list1, list2)
 	var nlpArray []GetMusicListData
 	var nlpMsgArray []string
@@ -276,14 +283,14 @@ func nlpListToMsg(keywordArray []gjson.Result) (NLPMsg *string, NLPArray []GetMu
 		}
 		switch k1 {
 		case 1:
-			reg := regexp.MustCompile("(?i)(" + v1.Get("Word").String() + ")")
+			reg := regexp.MustCompile("(?i)(" + v1.Word + ")")
 			for _, v2 := range ListArray {
 				if reg.MatchString(v2.VocalName) || reg.MatchString(v2.OriginName) {
 					nlpArray = append(nlpArray, v2)
 				}
 			}
 		default:
-			reg := regexp.MustCompile("(?i)(" + v1.Get("Word").String() + ")")
+			reg := regexp.MustCompile("(?i)(" + v1.Word + ")")
 			for _, v2 := range nlpArray {
 				if reg.MatchString(v2.VocalName) || reg.MatchString(v2.OriginName) {
 					nlpArray = append(nlpArray, v2)
