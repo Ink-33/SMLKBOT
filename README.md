@@ -7,6 +7,8 @@
 
 SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人后端程序，支持HTTP模式与SaaS模式。
 
+>***且用且珍惜***
+
 ## 0.获取SMLKBOT
 您可以通过Github release获取稳定版，或获取[Night Build](https://eas.smlk.org:8443/job/SMLKBOT/)。  
 请注意: 构建好的SaaS软件包仅发布在[Night Build](https://eas.smlk.org:8443/job/SMLKBOT/).  
