@@ -71,8 +71,18 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		} else {
 			keywordArray := keywordStruct.Response.Keywords
 			nlpMsg, nlpArray := nlpListToMsg(keywordArray)
+			if nlpArray == nil {
+				msgMake := "An unexpected error occored while fetching data, please check console."
+				cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
+				return
+			}
 			if len(nlpArray) == 0 {
 				list := GetHotMusicList()
+				if list.Total == -1 {
+					msgMake := "An unexpected error occored while fetching data, please check console."
+					cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
+					return
+				}
 				listMsg, ListArray := listToMsg(list)
 				sendMsg(MsgInfo, BotConfig, listMsg, ListArray, mt, true)
 			} else {
@@ -273,6 +283,10 @@ func isNumber(str string) bool {
 func nlpListToMsg(keywordArray []nlpRequestKeywords) (NLPMsg *string, NLPArray []GetMusicListData) {
 	list1 := GetVTBMusicList(keywordArray[0].Word, "MusicName")
 	list2 := GetVTBMusicList(keywordArray[0].Word, "VtbName")
+	if list1.Total == -1 || list2.Total == -1 {
+		msgMake := "An unexpected error occored while fetching data, please check console."
+		return &msgMake, nil
+	}
 	_, ListArray := listToMsg(list1, list2)
 	var nlpArray []GetMusicListData
 	var nlpMsgArray []string

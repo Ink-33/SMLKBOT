@@ -251,7 +251,7 @@ func GetHotMusicList() (VTBMusicList *MusicList) {
 		ml.Total = -1
 		return ml
 	}
-	ml.Total = 12
+	ml.Total = len(decode.Data)
 	ml.Data = decode.Data
 	return ml
 }
