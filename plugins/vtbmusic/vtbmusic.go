@@ -53,7 +53,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		}
 		keywordArray := keywordStruct.Response.Keywords
 		if keywordStruct.Response.Error != nil || len(keywordArray) == 0 {
-			log.Println("NLP:", keywordStruct.Response.Error.Message)
+			log.Println("NLP:", keywordStruct.Response.Error)
 			list1 := GetVTBMusicList(mt.content, "MusicName")
 			list2 := GetVTBMusicList(mt.content, "VtbName")
 			if list1.Total == -1 || list2.Total == -1 {

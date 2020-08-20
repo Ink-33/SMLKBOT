@@ -31,87 +31,46 @@ func getAPIAddr(APIName string) string {
 //	Method: MusicName,VtbName
 func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 	ml := new(MusicList)
+	s := make(map[string]string)
+	s["keyword"] = Keyword
 	switch Method {
 	case "VtbName":
-		vl := GetVTBsList(Keyword)
-		vidraw := make([]string, 0)
-		for _, v := range vl.Data {
-			vidraw = append(vidraw, v.ID)
-		}
-		var vid []string
-		if len(vidraw) > 3 {
-			vid = vidraw[0:2]
-		} else {
-			vid = vidraw
-		}
-		for _, v := range vid {
-			s := make(map[string]string)
-			s["condition"] = "VocalId"
-			s["keyword"] = v
-			postjson := &vtbSearchJSON{
-				Search:    s,
-				PageIndex: 1,
-				PageRows:  9999,
-			}
-			p, err := json.Marshal(postjson)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			result, err := cqfunction.WebPostJSONContent(getAPIAddr("MusicList"), string(p))
-			if err != nil {
-				_, ok := err.(*cqfunction.TimeOutError)
-				if ok {
-					log.Println(err.Error())
-					runtime.Goexit()
-				} else {
-					log.Fatalln(err)
-				}
-			}
-			decode := new(GetMusicList)
-			json.Unmarshal(result, decode)
-			tmp := decode.Data
-			for _, v2 := range tmp {
-				ml.Data = append(ml.Data, v2)
-			}
-			ml.Total = ml.Total + len(ml.Data)
-		}
+		s["condition"] = "VocalName"
 	default:
-		s := make(map[string]string)
 		s["condition"] = "OriginName"
-		s["keyword"] = Keyword
-		postjson := &vtbSearchJSON{
-			Search:    s,
-			PageIndex: 1,
-			PageRows:  9999,
-		}
+	}
+	postjson := &vtbSearchJSON{
+		Search:    s,
+		PageIndex: 1,
+		PageRows:  9999,
+	}
 
-		p, err := json.Marshal(postjson)
-		if err != nil {
+	p, err := json.Marshal(postjson)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	result, err := cqfunction.WebPostJSONContent(getAPIAddr("MusicList"), string(p))
+	if err != nil {
+		_, ok := err.(*cqfunction.TimeOutError)
+		if ok {
+			log.Println(err.Error())
+			runtime.Goexit()
+		} else {
 			log.Fatalln(err)
 		}
-
-		result, err := cqfunction.WebPostJSONContent(getAPIAddr("MusicList"), string(p))
-		if err != nil {
-			_, ok := err.(*cqfunction.TimeOutError)
-			if ok {
-				log.Println(err.Error())
-				runtime.Goexit()
-			} else {
-				log.Fatalln(err)
-			}
-		}
-		decode := new(GetMusicList)
-		err = json.Unmarshal(result, decode)
-		if err != nil {
-			ml.Total = -1
-			log.Println(err)
-			return ml
-		}
-		ml.Total = decode.Total
-		ml.Data = decode.Data
+	}
+	decode := new(GetMusicList)
+	err = json.Unmarshal(result, decode)
+	if err != nil {
+		ml.Total = -1
+		log.Println(err)
 		return ml
 	}
+	ml.Total = decode.Total
+	ml.Data = decode.Data
 	return ml
+
 }
 
 //GetVTBMusicCDN : Get VTBMusic CDN Detail Info
