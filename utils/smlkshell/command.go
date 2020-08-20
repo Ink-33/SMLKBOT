@@ -13,11 +13,11 @@ import (
 var date, version, commit string = "DevBuild", "DevBuild", "DevBuild"
 
 //IsSCF is the mark to judge whether SMLKBOT is runing in SaaS mode.
-//	This varible should be set by using -ldflags while building.
+//	This variable should be set by using -ldflags while building.
 var IsSCF string
 var upTime string
 
-//RoleHandler : Fechting user's role.
+//RoleHandler : Fetching user's role.
 func RoleHandler(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) (role *botstruct.Role) {
 	role = new(botstruct.Role)
 	role.RoleName = "member"
@@ -49,7 +49,7 @@ func RoleHandler(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) (ro
 //	succeed
 //	deny
 //	disabled
-//	notfonud
+//	nofonud
 func ShellLog(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, result string) {
 	var msgMake string
 	switch result {
@@ -61,7 +61,7 @@ func ShellLog(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, result
 		break
 	case "disabled":
 		msgMake = "$SmlkShell> disabled."
-	case "notfound":
+	case "nofonud":
 		msgMake = fmt.Sprintf("$SmlkShell> %s: command not found", strings.Replace(MsgInfo.Message, prefix, "", 1))
 		break
 	default:
@@ -75,7 +75,7 @@ func ShellLog(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, result
 func ping(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
 	cost := time.Now().Unix() - MsgInfo.TimeStamp
 	if len(msgArray) != 1 {
-		ShellLog(MsgInfo, BotConfig, "notfound")
+		ShellLog(MsgInfo, BotConfig, "nofonud")
 		return
 	}
 	ShellLog(MsgInfo, BotConfig, fmt.Sprintf("本次请求耗时:%d秒", cost))
@@ -84,7 +84,7 @@ func ping(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray [
 func status(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
 	if RoleHandler(MsgInfo, BotConfig).RoleLevel >= 1 {
 		if len(msgArray) != 1 {
-			ShellLog(MsgInfo, BotConfig, "notfound")
+			ShellLog(MsgInfo, BotConfig, "nofonud")
 			return
 		}
 		msgMake := GetStatus()
@@ -97,7 +97,7 @@ func status(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray
 func gc(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
 	if RoleHandler(MsgInfo, BotConfig).RoleLevel >= 3 {
 		if len(msgArray) != 1 {
-			ShellLog(MsgInfo, BotConfig, "notfound")
+			ShellLog(MsgInfo, BotConfig, "nofonud")
 			return
 		}
 		runtime.GC()
@@ -109,7 +109,7 @@ func gc(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []s
 func reload(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
 	if RoleHandler(MsgInfo, BotConfig).RoleLevel == 3 {
 		if len(msgArray) != 1 {
-			ShellLog(MsgInfo, BotConfig, "notfound")
+			ShellLog(MsgInfo, BotConfig, "nofonud")
 			return
 		}
 		cqfunction.ConfigFile = cqfunction.ReadConfig()

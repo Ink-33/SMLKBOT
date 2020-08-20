@@ -58,11 +58,11 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
-		hmacsh1.Reset()
-		hmacsh1.Write(body)
+		hmacSH1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
+		hmacSH1.Reset()
+		hmacSH1.Write(body)
 		var signature string = strings.Replace(r.Header.Get("X-Signature"), "sha1=", "", 1)
-		var hmacresult string = fmt.Sprintf("%x", hmacsh1.Sum(nil))
+		var hmacresult string = fmt.Sprintf("%x", hmacSH1.Sum(nil))
 		if signature == "" {
 			w.WriteHeader(401)
 			fmt.Fprint(w, "Unauthorized.")
@@ -92,11 +92,11 @@ func scfHandler(event apigwEvent) (result *scfReturn, err error) {
 	if event.Headers.BotID == "" {
 		return newSCFReturn(406, "Not Acceptable."), nil
 	}
-	hmacsh1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+event.Headers.BotID+".HTTPAPIPostSecret").String()))
-	hmacsh1.Reset()
-	hmacsh1.Write([]byte(event.Body))
+	hmacSH1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+event.Headers.BotID+".HTTPAPIPostSecret").String()))
+	hmacSH1.Reset()
+	hmacSH1.Write([]byte(event.Body))
 	var signature string = strings.Replace(event.Headers.Signature, "sha1=", "", 1)
-	var hmacresult string = fmt.Sprintf("%x", hmacsh1.Sum(nil))
+	var hmacresult string = fmt.Sprintf("%x", hmacSH1.Sum(nil))
 	if signature == "" || signature != hmacresult {
 		return newSCFReturn(401, "Unauthorized."), nil
 	}

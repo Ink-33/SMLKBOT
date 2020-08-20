@@ -27,10 +27,10 @@ func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 	if au != "" {
 		log.SetPrefix("BiliAu2Card: ")
 		log.Println("Known command:", au)
-		Auinfo := GetAuInfo(au)
+		AuInfo := GetAuInfo(au)
 
-		if !Auinfo.AuStatus {
-			msgMake := "BiliAu2Card: AU" + Auinfo.AuNumber + Auinfo.AuMsg
+		if !AuInfo.AuStatus {
+			msgMake := "BiliAu2Card: AU" + AuInfo.AuNumber + AuInfo.AuMsg
 			switch MsgInfo.MsgType {
 			case "private":
 				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
@@ -40,7 +40,7 @@ func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 				break
 			}
 		} else {
-			cqCodeMake := "[CQ:music,type=custom,url=" + Auinfo.AuJumpURL + ",audio=" + Auinfo.AuURL + ",title=" + Auinfo.AuTitle + ",content=" + Auinfo.AuDesp + ",image=" + Auinfo.AuCoverURL + "@180w_180h]"
+			cqCodeMake := "[CQ:music,type=custom,url=" + AuInfo.AuJumpURL + ",audio=" + AuInfo.AuURL + ",title=" + AuInfo.AuTitle + ",content=" + AuInfo.AuDesp + ",image=" + AuInfo.AuCoverURL + "@180w_180h]"
 			switch MsgInfo.MsgType {
 			case "private":
 				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, cqCodeMake, BotConfig)

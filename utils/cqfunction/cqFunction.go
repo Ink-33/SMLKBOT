@@ -78,7 +78,7 @@ func GetWebContent(Addr string) (body []byte, err error) {
 		Timeout:   10 * time.Second,
 	}
 	request, err := http.NewRequest("GET", Addr, nil)
-	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4117.2 Safari/537.36")
+	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4239.0 Safari/537.36")
 	if err != nil {
 		return nil, err
 	}

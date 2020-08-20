@@ -9,7 +9,7 @@ import (
 
 /*
 Reverse proxy for VtbmusicAPI: https://api.vtbmusic.com:60006/v1/
-	This proxy is using Tencent Cloud API Gayeway to record the usage.
+	This proxy is using Tencent Cloud API Gateway to record the usage.
 */
 const vtbMusicAPIProxy string = "https://service-0pbekx7m-1252062863.gz.apigw.tencentcs.com/release/v1/"
 

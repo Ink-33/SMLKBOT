@@ -109,9 +109,9 @@ master代表机器人的所有者,拥有SmlkShell的最高权限
 }
 ```
 将上述`123`更换为机器人的QQ号  
-`HTTPAPIAddr`对应CQHTTP的`host`配置  
-`HTTPAPIToken`对应CQHTTP的`access_token`配置  
-`HTTPAPIPostSecret`对应CQHTTP的`secert`配置  
+`HTTPAPIAddr`对应OneBot的`host`配置  
+`HTTPAPIToken`对应OneBot的`access_token`配置  
+`HTTPAPIPostSecret`对应OneBot的`secret`配置  
 **以上四项均为必须项**  
 
 本程序支持同时为多个机器人账号处理信息,配置如下:
@@ -149,7 +149,7 @@ master代表机器人的所有者,拥有SmlkShell的最高权限
 `ListeningPath`为监听路径  
 `ListeningPort`为监听端口  
 
-此处对应CQHTTP的`post_url`配置  
+此处对应OneBot的`post_url`配置  
 
 对于例子配置，你应该将`http://{yourdomain}:12345/api/cqmsg`填入`post_url`,`{yourdomain}`对应你的域名或ip,若将程序运行在机器人服务器则填写`127.0.0.1`  
 

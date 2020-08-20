@@ -13,8 +13,8 @@ const biliAuAPIAddr string = "https://www.bilibili.com/audio/music-service-c/web
 const biliAudioPlayURL string = "https://api.bilibili.com/audio/music-service-c/shareUrl/redirectHttp?songid="
 const biliAudioJumpURL string = "https://www.bilibili.com/audio/au"
 
-//Auinfo includes some basic info of a Au number.
-type Auinfo struct {
+//AuInfo includes some basic info of a Au number.
+type AuInfo struct {
 	AuNumber   string
 	AuStatus   bool
 	AuMsg      string
@@ -27,8 +27,8 @@ type Auinfo struct {
 }
 
 //GetAuInfo : Get Bilibili Audio info
-func GetAuInfo(au string) (info *Auinfo) {
-	var ai = new(Auinfo)
+func GetAuInfo(au string) (info *AuInfo) {
+	var ai = new(AuInfo)
 	reg := regexp.MustCompile("[0-9]+")
 
 	ai.AuNumber = strings.Join(reg.FindAllString(au, 1), "")

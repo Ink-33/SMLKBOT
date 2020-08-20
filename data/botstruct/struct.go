@@ -16,7 +16,7 @@ type MsgInfo struct {
 	MD5       [16]byte
 }
 
-//BotConfig includes CQHTTPAPI config.
+//BotConfig includes OneBot config.
 type BotConfig struct {
 	MasterID          []gjson.Result
 	HTTPAPIAddr       string
