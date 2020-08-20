@@ -5,9 +5,8 @@
 [![GitHub stars](https://img.shields.io/github/stars/Ink-33/SMLKBOT?style=flat-square)](https://github.com/Ink-33/SMLKBOT/stargazers)
 [![GitHub license](https://img.shields.io/github/license/Ink-33/SMLKBOT?style=flat-square)](https://github.com/Ink-33/SMLKBOT/blob/master/LICENSE)  
 
-SMLKBOT是基于[CQHTTPAPI](https://github.com/richardchien/coolq-http-api)的一个聚合群聊娱乐机器人后端程序，支持HTTP模式与SaaS模式。
+SMLKBOT是基于[OneBot协议](https://github.com/howmanybots/onebot)的一个聚合群聊娱乐机器人后端程序，支持HTTP模式与SaaS模式。
 
-由于本人精力有限，且 酷Q 即将停止服务，本项目已停止维护，感谢大家一直以来的支持和鼓励！
 
 ## 0.获取SMLKBOT
 您可以通过Github release获取稳定版，或获取[Night Build](https://eas.smlk.org:8443/job/SMLKBOT/)。  
