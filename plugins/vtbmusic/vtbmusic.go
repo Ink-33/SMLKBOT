@@ -18,7 +18,7 @@ type msgType struct {
 	ctype   int
 }
 
-var waiting = make(chan *waitingChan, 500)
+var waiting = make(chan *waitingChan, 15)
 var counter int = 0
 
 type newRequest struct {
@@ -53,7 +53,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		}
 		keywordArray := keywordStruct.Response.Keywords
 		if keywordStruct.Response.Error != nil || len(keywordArray) == 0 {
-			log.Println("NLP:", keywordStruct.Response.Error)
+			log.Println("NLP:", keywordStruct.Response.Error, keywordArray)
 			list1 := GetVTBMusicList(mt.content, "MusicName")
 			list2 := GetVTBMusicList(mt.content, "VtbName")
 			if list1.Total == -1 || list2.Total == -1 {
@@ -73,6 +73,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			nlpMsg, nlpArray := nlpListToMsg(keywordArray)
 			if nlpArray == nil {
 				msgMake := "An unexpected error occurred while fetching data, please check console."
+				log.Println(msgMake)
 				cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 				return
 			}
@@ -80,6 +81,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 				list := GetHotMusicList()
 				if list.Total == -1 {
 					msgMake := "An unexpected error occurred while fetching data, please check console."
+					log.Println(msgMake)
 					cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 					return
 				}
@@ -97,6 +99,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		var msgMake string
 		if list.Total == -1 {
 			msgMake = "An unexpected error occurred while fetching data, please check console."
+			log.Println(msgMake)
 		} else {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nVTBMusic 当前已收录歌曲 " + strconv.Itoa(list.Total) + "首。获取使用帮助请发送vtbhelp"
 		}
@@ -119,6 +122,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 		var msgMake string
 		if list.Total == -1 {
 			msgMake = "An unexpected error occurred while fetching data, please check console."
+			log.Println(msgMake)
 		} else if list.Total == 0 {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nid:" + mt.content + "没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		} else {
@@ -190,8 +194,8 @@ func msgHandler(msg string) (MsgType *msgType) {
 }
 
 func listToMsg(list ...*MusicList) (listMsg *string, ListArray []GetMusicListData) {
-	var q []string
-	var listReturn []GetMusicListData
+	var q = make([]string, 0)
+	var listReturn = make([]GetMusicListData, 0)
 	for _, v := range list {
 		for i, r := range v.Data {
 			listReturn = append(listReturn, r)
@@ -283,13 +287,23 @@ func isNumber(str string) bool {
 func nlpListToMsg(keywordArray []nlpRequestKeywords) (NLPMsg *string, NLPArray []GetMusicListData) {
 	list1 := GetVTBMusicList(keywordArray[0].Word, "MusicName")
 	list2 := GetVTBMusicList(keywordArray[0].Word, "VtbName")
+
 	if list1.Total == -1 || list2.Total == -1 {
 		msgMake := "An unexpected error occurred while fetching data, please check console."
+		log.Printf("Fail while getting music lists, list1:%d, list2:%d", list1.Total, list2.Total)
 		return &msgMake, nil
 	}
+
+	var nlpArray = make([]GetMusicListData, 0)
+	var nlpMsgArray = make([]string, 0)
+
+	if list1.Total+list2.Total == 0 {
+		msgMake := "nope"
+		return &msgMake, nlpArray
+	}
+
 	_, ListArray := listToMsg(list1, list2)
-	var nlpArray []GetMusicListData
-	var nlpMsgArray []string
+
 	for k1, v1 := range keywordArray {
 		if len(keywordArray) == 1 {
 			nlpArray = ListArray
