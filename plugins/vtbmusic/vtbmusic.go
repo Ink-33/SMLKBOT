@@ -5,6 +5,7 @@ import (
 	"SMLKBOT/data/helps"
 	"SMLKBOT/utils/cqfunction"
 	"encoding/json"
+	"fmt"
 	"log"
 	"regexp"
 	"runtime"
@@ -15,11 +16,11 @@ import (
 
 type msgType struct {
 	content string
-	ctype   int
+	ctype   int8
 }
 
 var waiting = make(chan *waitingChan, 15)
-var counter int = 0
+var counter int8 = 0
 
 type newRequest struct {
 	isNewRequest    bool
@@ -127,7 +128,7 @@ func VTBMusic(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 			msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\nid:" + mt.content + "没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
 		} else {
 			info := getMusicDetail(list.Data, 1)
-			msgMake = "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+			msgMake = getMusicCode(info)
 		}
 		cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
 		break
@@ -234,14 +235,14 @@ func waitingFunc(list []GetMusicListData, MsgInfo *botstruct.MsgInfo, BotConfig 
 					switch c.MsgType {
 					case "private":
 						info := getMusicDetail(list, index)
-						cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/song?id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+						cqCodeMake := getMusicCode(info)
 						counter--
 						go cqfunction.CQSendPrivateMsg(c.SenderID, cqCodeMake, BotConfig)
 						break
 					case "group":
 						if c.GroupID == MsgInfo.GroupID {
 							info := getMusicDetail(list, index)
-							cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/song?id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+							cqCodeMake := getMusicCode(info)
 							counter--
 							go cqfunction.CQSendGroupMsg(c.GroupID, cqCodeMake, BotConfig)
 							break
@@ -358,7 +359,7 @@ func sendMsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listMsg
 		case "private":
 			if lens == 1 {
 				info := getMusicDetail(ListArray, 1)
-				msgMake = "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+				msgMake = getMusicCode(info)
 			} else if lens <= 200 {
 				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + MsgType.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
 				go do()
@@ -370,7 +371,7 @@ func sendMsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listMsg
 		case "group":
 			if lens == 1 {
 				info := getMusicDetail(ListArray, 1)
-				msgMake = "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+				msgMake = getMusicCode(info)
 				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
 			} else if lens <= 15 {
 				msgMake = "[CQ:at,qq=" + MsgInfo.SenderID + "]\n《" + MsgType.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
@@ -392,4 +393,8 @@ func sendMsg(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, listMsg
 		}
 
 	}
+}
+
+func getMusicCode(Info *MusicInfo) string {
+	return fmt.Sprintf("[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=%s,audio=%s,title=%s,content=%s,image=%s]", Info.MusicID, Info.MusicURL, Info.MusicName, Info.MusicVocal, Info.Cover)
 }
