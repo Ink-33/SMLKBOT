@@ -234,14 +234,14 @@ func waitingFunc(list []GetMusicListData, MsgInfo *botstruct.MsgInfo, BotConfig 
 					switch c.MsgType {
 					case "private":
 						info := getMusicDetail(list, index)
-						cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+						cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/song?id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
 						counter--
 						go cqfunction.CQSendPrivateMsg(c.SenderID, cqCodeMake, BotConfig)
 						break
 					case "group":
 						if c.GroupID == MsgInfo.GroupID {
 							info := getMusicDetail(list, index)
-							cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/?song_id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
+							cqCodeMake := "[CQ:music,type=custom,url=https://vtbmusic.com/song?id=" + info.MusicID + ",audio=" + info.MusicURL + ",title=" + info.MusicName + ",content=" + info.MusicVocal + ",image=" + info.Cover + "]"
 							counter--
 							go cqfunction.CQSendGroupMsg(c.GroupID, cqCodeMake, BotConfig)
 							break
