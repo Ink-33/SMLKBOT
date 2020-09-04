@@ -5,6 +5,6 @@ import (
 )
 
 //Bilibili : The main function of bilibili
-func Bilibili(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
-	Au2Card(MsgInfo, BotConfig)
+func Bilibili(FunctionRequest *botstruct.FunctionRequest) {
+	Au2Card(FunctionRequest)
 }

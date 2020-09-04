@@ -6,7 +6,7 @@ import (
 )
 
 //The format for SmlkShell command .
-type commandFormat func(*botstruct.MsgInfo, *botstruct.BotConfig, []string)
+type commandFormat func(*botstruct.FunctionRequest, []string)
 
 var commandMap = make(map[string]commandFormat)
 

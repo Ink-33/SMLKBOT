@@ -21,8 +21,8 @@ func GetAu(msg string) (au string) {
 }
 
 // Au2Card : Handle meassage and send music card.
-func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
-	au := GetAu(MsgInfo.Message)
+func Au2Card(FunctionRequest *botstruct.FunctionRequest) {
+	au := GetAu(FunctionRequest.Message)
 
 	if au != "" {
 		log.SetPrefix("BiliAu2Card: ")
@@ -31,22 +31,22 @@ func Au2Card(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
 
 		if !AuInfo.AuStatus {
 			msgMake := "BiliAu2Card: AU" + AuInfo.AuNumber + AuInfo.AuMsg
-			switch MsgInfo.MsgType {
+			switch FunctionRequest.MsgType {
 			case "private":
-				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, msgMake, BotConfig)
+				go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, msgMake, &FunctionRequest.BotConfig)
 				break
 			case "group":
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, msgMake, BotConfig)
+				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, msgMake, &FunctionRequest.BotConfig)
 				break
 			}
 		} else {
 			cqCodeMake := "[CQ:music,type=custom,url=" + AuInfo.AuJumpURL + ",audio=" + AuInfo.AuURL + ",title=" + AuInfo.AuTitle + ",content=" + AuInfo.AuDesp + ",image=" + AuInfo.AuCoverURL + "@180w_180h]"
-			switch MsgInfo.MsgType {
+			switch FunctionRequest.MsgType {
 			case "private":
-				go cqfunction.CQSendPrivateMsg(MsgInfo.SenderID, cqCodeMake, BotConfig)
+				go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, cqCodeMake, &FunctionRequest.BotConfig)
 				break
 			case "group":
-				go cqfunction.CQSendGroupMsg(MsgInfo.GroupID, cqCodeMake, BotConfig)
+				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, cqCodeMake, &FunctionRequest.BotConfig)
 				break
 			}
 		}

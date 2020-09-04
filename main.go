@@ -5,7 +5,6 @@ import (
 	"SMLKBOT/utils/cqfunction"
 	"SMLKBOT/utils/smlkshell"
 	"crypto/hmac"
-	"crypto/md5"
 	"crypto/sha1"
 	"fmt"
 	"io/ioutil"
@@ -14,7 +13,6 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"strconv"
 	"strings"
 	"syscall"
 
@@ -22,17 +20,17 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-type functionFormat func(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig)
+type functionFormat func(*botstruct.FunctionRequest)
 
-func judgeandrun(name string, functionFormat functionFormat, MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) {
+func judgeandrun(name string, functionFormat functionFormat, FunctionRequest *botstruct.FunctionRequest) {
 	config := gjson.Get(*cqfunction.ConfigFile, "Feature.0").String()
 	if gjson.Get(config, name).Bool() {
-		go functionFormat(MsgInfo, BotConfig)
+		go functionFormat(FunctionRequest)
 	}
 }
 
 //MsgHandler converts HTTP Post Body to MsgInfo Struct.
-func MsgHandler(raw []byte) (MsgInfo *botstruct.MsgInfo) {
+func MsgHandler(hmacsha1 string, raw []byte) (MsgInfo *botstruct.MsgInfo) {
 	var mi = new(botstruct.MsgInfo)
 	mi.TimeStamp = gjson.GetBytes(raw, "time").Int()
 	mi.MsgType = gjson.GetBytes(raw, "message_type").String()
@@ -40,8 +38,7 @@ func MsgHandler(raw []byte) (MsgInfo *botstruct.MsgInfo) {
 	mi.Message = gjson.GetBytes(raw, "message").String()
 	mi.SenderID = gjson.GetBytes(raw, "user_id").String()
 	mi.Role = gjson.GetBytes(raw, "sender.role").String()
-	str := []byte(strconv.FormatInt(mi.TimeStamp, 10) + mi.MsgType + mi.GroupID + mi.Message + mi.SenderID)
-	mi.MD5 = md5.Sum(str)
+	mi.HMACSHA1 = hmacsha1
 	return mi
 }
 
@@ -71,17 +68,18 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "Unauthorized.")
 		} else {
 			if gjson.GetBytes(body, "meta_event_type").String() != "heartbeat" {
-				var msgInfoTmp = MsgHandler(body)
+				var msgInfoTmp = MsgHandler(signature, body)
 				msgInfoTmp.RobotID = rid
 				var bc = new(botstruct.BotConfig)
 				bc.HTTPAPIAddr = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
 				bc.HTTPAPIToken = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
 				bc.MasterID = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Master").Array()
 				log.SetPrefix("SMLKBOT: ")
-				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(msgInfoTmp, bc).RoleName)
-				smlkshell.SmlkShell(msgInfoTmp, bc)
+				fr := &botstruct.FunctionRequest{MsgInfo: *msgInfoTmp, BotConfig: *bc}
+				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(fr).RoleName)
+				smlkshell.SmlkShell(fr)
 				for k, v := range functionList {
-					go judgeandrun(k, v, msgInfoTmp, bc)
+					go judgeandrun(k, v, fr)
 				}
 			}
 		}
@@ -101,17 +99,18 @@ func scfHandler(event apigwEvent) (result *scfReturn, err error) {
 		return newSCFReturn(401, "Unauthorized."), nil
 	}
 	if gjson.Get(event.Body, "meta_event_type").String() != "heartbeat" {
-		var msgInfoTmp = MsgHandler([]byte(event.Body))
+		var msgInfoTmp = MsgHandler(signature, []byte(event.Body))
 		msgInfoTmp.RobotID = event.Headers.BotID
 		var bc = new(botstruct.BotConfig)
 		bc.HTTPAPIAddr = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
 		bc.HTTPAPIToken = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
 		bc.MasterID = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Master").Array()
 		log.SetPrefix("SMLKBOT: ")
-		go log.Println("RobotID:", event.Headers.BotID, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(msgInfoTmp, bc).RoleName)
-		smlkshell.SmlkShell(msgInfoTmp, bc)
+		fr := &botstruct.FunctionRequest{MsgInfo: *msgInfoTmp, BotConfig: *bc}
+		go log.Println("RobotID:", event.Headers.BotID, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(fr).RoleName)
+		smlkshell.SmlkShell(fr)
 		for k, v := range functionList {
-			go judgeandrun(k, v, msgInfoTmp, bc)
+			go judgeandrun(k, v, fr)
 		}
 
 	}

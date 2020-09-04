@@ -13,7 +13,7 @@ type MsgInfo struct {
 	Message   string
 	MsgType   string
 	RobotID   string
-	MD5       [16]byte
+	HMACSHA1  string
 }
 
 //BotConfig includes OneBot config.
@@ -22,6 +22,12 @@ type BotConfig struct {
 	HTTPAPIAddr       string
 	HTTPAPIToken      string
 	HTTPAPIPostSecret string
+}
+
+//FunctionRequest includes MsgInfo and BotConfig
+type FunctionRequest struct {
+	MsgInfo
+	BotConfig
 }
 
 /*

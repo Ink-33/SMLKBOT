@@ -18,19 +18,19 @@ var IsSCF string
 var upTime string
 
 //RoleHandler : Fetching user's role.
-func RoleHandler(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) (role *botstruct.Role) {
+func RoleHandler(FunctionRequest *botstruct.FunctionRequest) (role *botstruct.Role) {
 	role = new(botstruct.Role)
 	role.RoleName = "member"
 	role.RoleLevel = 0
-	for _, v := range BotConfig.MasterID {
-		if MsgInfo.SenderID == v.String() {
+	for _, v := range FunctionRequest.MasterID {
+		if FunctionRequest.SenderID == v.String() {
 			role.RoleLevel = 3
 			role.RoleName = "master"
 			return
 		}
 	}
-	if MsgInfo.MsgType == "group" {
-		role.RoleName = MsgInfo.Role
+	if FunctionRequest.MsgType == "group" {
+		role.RoleName = FunctionRequest.Role
 		switch role.RoleName {
 		case "owner":
 			role.RoleLevel = 2
@@ -50,7 +50,7 @@ func RoleHandler(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig) (ro
 //	deny
 //	disabled
 //	nofonud
-func ShellLog(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, result string) {
+func ShellLog(FunctionRequest *botstruct.FunctionRequest, result string) {
 	var msgMake string
 	switch result {
 	case "succeed":
@@ -62,61 +62,61 @@ func ShellLog(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, result
 	case "disabled":
 		msgMake = "$SmlkShell> disabled."
 	case "nofonud":
-		msgMake = fmt.Sprintf("$SmlkShell> %s: command not found", strings.Replace(MsgInfo.Message, prefix, "", 1))
+		msgMake = fmt.Sprintf("$SmlkShell> %s: command not found", strings.Replace(FunctionRequest.Message, prefix, "", 1))
 		break
 	default:
 		msgMake = result
 	}
 	if msgMake != "" {
-		cqfunction.CQSendMsg(MsgInfo, msgMake, BotConfig)
+		cqfunction.CQSendMsg(FunctionRequest, msgMake)
 	}
 }
 
-func ping(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
-	cost := time.Now().Unix() - MsgInfo.TimeStamp
+func ping(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
+	cost := time.Now().Unix() - FunctionRequest.TimeStamp
 	if len(msgArray) != 1 {
-		ShellLog(MsgInfo, BotConfig, "nofonud")
+		ShellLog(FunctionRequest, "nofonud")
 		return
 	}
-	ShellLog(MsgInfo, BotConfig, fmt.Sprintf("本次请求耗时:%d秒", cost))
+	ShellLog(FunctionRequest, fmt.Sprintf("本次请求耗时:%d秒", cost))
 }
 
-func status(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
-	if RoleHandler(MsgInfo, BotConfig).RoleLevel >= 1 {
+func status(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
+	if RoleHandler(FunctionRequest).RoleLevel >= 1 {
 		if len(msgArray) != 1 {
-			ShellLog(MsgInfo, BotConfig, "nofonud")
+			ShellLog(FunctionRequest, "nofonud")
 			return
 		}
 		msgMake := GetStatus()
-		ShellLog(MsgInfo, BotConfig, msgMake)
+		ShellLog(FunctionRequest, msgMake)
 	} else {
-		ShellLog(MsgInfo, BotConfig, "deny")
+		ShellLog(FunctionRequest, "deny")
 	}
 }
 
-func gc(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
-	if RoleHandler(MsgInfo, BotConfig).RoleLevel >= 3 {
+func gc(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
+	if RoleHandler(FunctionRequest).RoleLevel >= 3 {
 		if len(msgArray) != 1 {
-			ShellLog(MsgInfo, BotConfig, "nofonud")
+			ShellLog(FunctionRequest, "nofonud")
 			return
 		}
 		runtime.GC()
-		ShellLog(MsgInfo, BotConfig, "succeed")
+		ShellLog(FunctionRequest, "succeed")
 	} else {
-		ShellLog(MsgInfo, BotConfig, "deny")
+		ShellLog(FunctionRequest, "deny")
 	}
 }
-func reload(MsgInfo *botstruct.MsgInfo, BotConfig *botstruct.BotConfig, msgArray []string) {
-	if RoleHandler(MsgInfo, BotConfig).RoleLevel == 3 {
+func reload(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
+	if RoleHandler(FunctionRequest).RoleLevel == 3 {
 		if len(msgArray) != 1 {
-			ShellLog(MsgInfo, BotConfig, "nofonud")
+			ShellLog(FunctionRequest, "nofonud")
 			return
 		}
 		cqfunction.ConfigFile = cqfunction.ReadConfig()
 		functionReload()
-		ShellLog(MsgInfo, BotConfig, "succeed")
+		ShellLog(FunctionRequest, "succeed")
 	} else {
-		ShellLog(MsgInfo, BotConfig, "deny")
+		ShellLog(FunctionRequest, "deny")
 	}
 }
 

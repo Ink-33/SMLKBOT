@@ -58,13 +58,13 @@ func CQSendPrivateMsg(id, msg string, BotConfig *botstruct.BotConfig) {
 }
 
 //CQSendMsg : Send message
-func CQSendMsg(MsgInfo *botstruct.MsgInfo, msg string, BotConfig *botstruct.BotConfig) {
-	switch MsgInfo.MsgType {
+func CQSendMsg(FunctionRequest *botstruct.FunctionRequest, msg string) {
+	switch FunctionRequest.MsgType {
 	case "private":
-		go CQSendPrivateMsg(MsgInfo.SenderID, msg, BotConfig)
+		go CQSendPrivateMsg(FunctionRequest.SenderID, msg, &FunctionRequest.BotConfig)
 		break
 	case "group":
-		go CQSendGroupMsg(MsgInfo.GroupID, msg, BotConfig)
+		go CQSendGroupMsg(FunctionRequest.GroupID, msg, &FunctionRequest.BotConfig)
 		break
 	}
 }
@@ -137,7 +137,7 @@ func WebPostJSONContent(Addr string, postbody string) (body []byte, err error) {
 func ReadConfig() *string {
 	file, err := ioutil.ReadFile("conf.json")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("配置文件读取失败:",err)
 	}
 	result := string(file)
 	return &result
