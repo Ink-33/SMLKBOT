@@ -158,5 +158,6 @@ master代表机器人的所有者,拥有SmlkShell的最高权限
 `false`是禁用，`true`是启用。
 
 ## 更新计划
-Steam综合  
-Bilibili综合
+Steam综合(plugin)  
+Bilibili综合(plugin)  
+腾讯云综合功能(util)  
