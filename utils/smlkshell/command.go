@@ -12,7 +12,7 @@ import (
 //Compile
 var date, version, commit string = "DevBuild", "DevBuild", "DevBuild"
 
-//IsSCF is the mark to judge whether SMLKBOT is runing in SaaS mode.
+//IsSCF is the mark to judge whether SMLKBOT is running in SaaS mode.
 //	This variable should be set by using -ldflags while building.
 var IsSCF string
 var upTime string
