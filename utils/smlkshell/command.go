@@ -82,7 +82,7 @@ func ping(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
 }
 
 func status(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
-	if RoleHandler(FunctionRequest).RoleLevel >= 1 {
+	if RoleHandler(FunctionRequest).RoleLevel >= 0 {
 		if len(msgArray) != 1 {
 			ShellLog(FunctionRequest, "nofonud")
 			return
