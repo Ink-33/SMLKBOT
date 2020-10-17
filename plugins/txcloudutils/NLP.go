@@ -27,8 +27,8 @@ func Load() {
 	)
 }
 
-//TenKeywordsExtraction :请求腾讯TenKeywordsExtraction API,直接传入待提取文本
-func TenKeywordsExtraction(params string) (result string) {
+//TenKeywordsExtraction :请求腾讯TenKeywordsExtraction API,传入待提取文本与关键词数量上限
+func TenKeywordsExtraction(params string, quantity uint64) (result string) {
 	jsonstruct := &KeywordsExtractionRequest{
 		KeyWord: params,
 	}
@@ -44,6 +44,7 @@ func TenKeywordsExtraction(params string) (result string) {
 		log.Fatalln(err)
 	}
 	request := nlp.NewKeywordsExtractionRequest()
+	request.Num = &quantity
 	err = request.FromJsonString(string(jsonbytes))
 	if err != nil {
 		log.Fatalln(err)
@@ -79,6 +80,6 @@ type KeywordsExtractionRespose struct {
 
 //KeywordsExtractionKeywords : NLP文段摘要返回keywords字段结构体
 type KeywordsExtractionKeywords struct {
-	Score int    `json:"Score"`
-	Word  string `json:"Word"`
+	Score float64 `json:"Score"`
+	Word  string  `json:"Word"`
 }

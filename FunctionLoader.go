@@ -11,6 +11,6 @@ var functionList = make(map[string]functionFormat)
 func init() {
 	functionList["Bilibili"] = bilibili.Bilibili
 	functionList["VTBMusic"] = vtbmusic.VTBMusic
-	functionList["TxcCloudUtils"] = txcloudutils.TxCloudUtils
+	functionList["TxCloudUtils"] = txcloudutils.TxCloudUtils
 }
 

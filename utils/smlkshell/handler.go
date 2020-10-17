@@ -11,14 +11,12 @@ var prefix string = "<"
 //SmlkShell is the shell of SMLKBOT
 func SmlkShell(FunctionRequest *botstruct.FunctionRequest) {
 	if strings.HasPrefix(FunctionRequest.Message, prefix) {
-		log.Println("Known command: SmlkShell")
 		msgArray := MsgSplit(FunctionRequest.Message)
 		var command = commandMap[msgArray[0]]
 		if command != nil {
+			log.Println("Known command: SmlkShell")
 			go command(FunctionRequest, msgArray)
-		} else {
-			ShellLog(FunctionRequest, "notfound")
-		}
+		} 
 	}
 }
 

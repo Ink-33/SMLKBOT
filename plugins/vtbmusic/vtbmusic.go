@@ -57,7 +57,7 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest) {
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
 		go cqfunction.CQSendMsg(FunctionRequest, "Searching...")
-		keywordjson := txc.TenKeywordsExtraction(mt.content)
+		keywordjson := txc.TenKeywordsExtraction(mt.content,3)
 		keywordStruct := new(txc.KeywordsExtractionRespose)
 		err := json.Unmarshal([]byte(keywordjson), keywordStruct)
 		if err != nil {
