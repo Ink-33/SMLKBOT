@@ -2,12 +2,12 @@ package cqfunction
 
 import (
 	"SMLKBOT/data/botstruct"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 )
@@ -31,8 +31,13 @@ func init() {
 
 //CQSendGroupMsg : Send Group message by using CoolQ HTTPAPI
 func CQSendGroupMsg(id, msg string, BotConfig *botstruct.BotConfig) {
-	//log.Println("cqFunctionGroup" + BotConfig.HTTPAPIAddr + "/send_group_msg?access_token=" + BotConfig.HTTPAPIToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
-	_, err := GetWebContent(BotConfig.HTTPAPIAddr + "/send_group_msg?access_token=" + BotConfig.HTTPAPIToken + "&group_id=" + id + "&message=" + url.QueryEscape(msg))
+	msgstruct := &CQGroupMsg{ID: id, Message: msg}
+	msgjson, err := json.Marshal(msgstruct)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	_, err = WebPostJSONContent(BotConfig.HTTPAPIAddr+"/send_group_msg?access_token="+BotConfig.HTTPAPIToken, string(msgjson))
 	if err != nil {
 		_, ok := err.(*TimeOutError)
 		if ok {
@@ -45,8 +50,13 @@ func CQSendGroupMsg(id, msg string, BotConfig *botstruct.BotConfig) {
 
 //CQSendPrivateMsg : Send private message by using CoolQ HTTPAPI
 func CQSendPrivateMsg(id, msg string, BotConfig *botstruct.BotConfig) {
-	//log.Println(BotConfig.HTTPAPIAddr + "/send_private_msg?access_token=" + BotConfig.HTTPAPIToken + "&user_id=" + id + "&message=" + url.QueryEscape(msg))
-	_, err := GetWebContent(BotConfig.HTTPAPIAddr + "/send_private_msg?access_token=" + BotConfig.HTTPAPIToken + "&user_id=" + id + "&message=" + url.QueryEscape(msg))
+	msgstruct := &CQPrivateMsg{ID: id, Message: msg}
+	msgjson, err := json.Marshal(msgstruct)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	_, err = WebPostJSONContent(BotConfig.HTTPAPIAddr+"/send_private_msg?access_token="+BotConfig.HTTPAPIToken, string(msgjson))
 	if err != nil {
 		_, ok := err.(*TimeOutError)
 		if ok {
@@ -137,7 +147,7 @@ func WebPostJSONContent(Addr string, postbody string) (body []byte, err error) {
 func ReadConfig() *string {
 	file, err := ioutil.ReadFile("conf.json")
 	if err != nil {
-		log.Fatal("配置文件读取失败:",err)
+		log.Fatal("配置文件读取失败:", err)
 	}
 	result := string(file)
 	return &result
@@ -146,4 +156,16 @@ func ReadConfig() *string {
 //ReturnConfig : Return the config
 func ReturnConfig() *string {
 	return ConfigFile
+}
+
+//CQPrivateMsg : 私聊消息
+type CQPrivateMsg struct {
+	ID      string `json:"user_id"`
+	Message string `json:"message"`
+}
+
+//CQGroupMsg : 群聊消息
+type CQGroupMsg struct {
+	ID      string `json:"group_id"`
+	Message string `json:"message"`
 }

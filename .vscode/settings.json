@@ -19,6 +19,7 @@
         "gjson",
         "goarch",
         "ldflags",
+        "nlpcpf",
         "nofonud",
         "openbsd",
         "smlkshell",

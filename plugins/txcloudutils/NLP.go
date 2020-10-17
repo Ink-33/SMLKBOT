@@ -2,7 +2,6 @@ package txcloudutils
 
 import (
 	"SMLKBOT/utils/cqfunction"
-	"encoding/json"
 	"log"
 
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
@@ -13,10 +12,13 @@ import (
 )
 
 var credential *common.Credential
-var cpf *profile.ClientProfile
+var nlpcpf *profile.ClientProfile
 
 func init() {
 	Load()
+	nlpcpf = profile.NewClientProfile()
+	nlpcpf.HttpProfile.Endpoint = "nlp.tencentcloudapi.com"
+	nlpcpf.HttpProfile.ReqTimeout = 10
 }
 
 //Load : 加载配置
@@ -28,27 +30,14 @@ func Load() {
 }
 
 //TenKeywordsExtraction :请求腾讯TenKeywordsExtraction API,传入待提取文本与关键词数量上限
-func TenKeywordsExtraction(params string, quantity uint64) (result string) {
-	jsonstruct := &KeywordsExtractionRequest{
-		KeyWord: params,
-	}
-	jsonbytes, err := json.Marshal(jsonstruct)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	cpf = profile.NewClientProfile()
-	cpf.HttpProfile.Endpoint = "nlp.tencentcloudapi.com"
-	cpf.HttpProfile.ReqTimeout = 10
-	client, err := nlp.NewClient(credential, "ap-guangzhou", cpf)
+func TenKeywordsExtraction(text string, quantity uint64) (result string) {
+	client, err := nlp.NewClient(credential, "ap-guangzhou", nlpcpf)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	request := nlp.NewKeywordsExtractionRequest()
 	request.Num = &quantity
-	err = request.FromJsonString(string(jsonbytes))
-	if err != nil {
-		log.Fatalln(err)
-	}
+	request.Text = &text
 	response, err := client.KeywordsExtraction(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		log.Printf("An API error has returned: %s", err)
@@ -82,4 +71,24 @@ type KeywordsExtractionRespose struct {
 type KeywordsExtractionKeywords struct {
 	Score float64 `json:"Score"`
 	Word  string  `json:"Word"`
+}
+
+//TenAutoSummarization :请求腾讯TenAutoSummarization API,传入待摘要文本与摘要的长度上限上限
+func TenAutoSummarization(Text string, Length uint64) (summary string) {
+	client, err := nlp.NewClient(credential, "ap-guangzhou", nlpcpf)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	request := nlp.NewAutoSummarizationRequest()
+	request.Text = &Text
+	request.Length = &Length
+	response, err := client.AutoSummarization(request)
+	if _, ok := err.(*errors.TencentCloudSDKError); ok {
+		log.Printf("An API error has returned: %s", err)
+		return
+	}
+	if err != nil {
+		log.Fatalln(err)
+	}
+	return *response.Response.Summary
 }

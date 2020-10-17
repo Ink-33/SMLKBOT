@@ -24,6 +24,8 @@ func TxCloudUtils(FunctionRequest *botstruct.FunctionRequest) {
 		case "--keywordext":
 			nlpKeywords(FunctionRequest, msgArray[3:])
 			break
+		case "--summarization":
+			nlpSummarization(FunctionRequest,msgArray[3:])
 		default:
 			cqfunction.CQSendMsg(FunctionRequest, "用法错误，请发送txc --help获取帮助")
 			break
@@ -69,6 +71,21 @@ func nlpKeywords(FunctionRequest *botstruct.FunctionRequest, msgArray []string) 
 	} else {
 		go cqfunction.CQSendMsg(FunctionRequest, "[CQ:at,qq="+FunctionRequest.SenderID+"]关键词提取结果为空。")
 	}
+}
+func nlpSummarization(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
+	length := isNumber(msgArray[0])
+	if length == 0 {
+		cqfunction.CQSendMsg(FunctionRequest, "用法错误，请发送txc --help获取帮助")
+		return
+	}
+	log.Println("Known command: TenAutoSummarization")
+	text := strings.Join(msgArray[1:], " ")
+	summarization := TenAutoSummarization(text, length)
+	if len(summarization) == 0 {
+		cqfunction.CQSendMsg(FunctionRequest, "摘要失败。")
+		return
+	}
+	go cqfunction.CQSendMsg(FunctionRequest, "[CQ:at,qq="+FunctionRequest.SenderID+"]摘要结果如下:\n"+summarization)
 }
 func isNumber(str string) uint64 {
 	var result uint64 = 0
