@@ -1,4 +1,4 @@
-package vtbmusic
+package txcloudutils
 
 import (
 	"SMLKBOT/utils/cqfunction"
@@ -17,9 +17,6 @@ var cpf *profile.ClientProfile
 
 func init() {
 	Load()
-	cpf = profile.NewClientProfile()
-	cpf.HttpProfile.Endpoint = "nlp.tencentcloudapi.com"
-	cpf.HttpProfile.ReqTimeout = 10
 }
 
 //Load : 加载配置
@@ -30,14 +27,24 @@ func Load() {
 	)
 }
 
-//TenKeywordsExtraction :请求腾讯NLP API,传参格式为{"Text":"text"}
+//TenKeywordsExtraction :请求腾讯TenKeywordsExtraction API,直接传入待提取文本
 func TenKeywordsExtraction(params string) (result string) {
+	jsonstruct := &KeywordsExtractionRequest{
+		KeyWord: params,
+	}
+	jsonbytes, err := json.Marshal(jsonstruct)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	cpf = profile.NewClientProfile()
+	cpf.HttpProfile.Endpoint = "nlp.tencentcloudapi.com"
+	cpf.HttpProfile.ReqTimeout = 10
 	client, err := nlp.NewClient(credential, "ap-guangzhou", cpf)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	request := nlp.NewKeywordsExtractionRequest()
-	err = request.FromJsonString(params)
+	err = request.FromJsonString(string(jsonbytes))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -53,25 +60,15 @@ func TenKeywordsExtraction(params string) (result string) {
 	return
 }
 
-//getNLPRequestString : 将Keyword格式化为Json
-func getNLPRequestString(params string) (result string) {
-	jsonstruct := &nlpRequest{
-		KeyWord: params,
-	}
-	jsonbytes, err := json.Marshal(jsonstruct)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	return string(jsonbytes)
-}
-
-type nlpRequest struct {
+//KeywordsExtractionRequest : NLP文段摘要请求结构体
+type KeywordsExtractionRequest struct {
 	KeyWord string `json:"Text"`
 }
 
-type nlpResult struct {
+//KeywordsExtractionRespose : NLP文段摘要返回值结构体
+type KeywordsExtractionRespose struct {
 	Response struct {
-		Keywords []nlpRequestKeywords `json:"Keywords"`
+		Keywords []KeywordsExtractionKeywords `json:"Keywords"`
 		Error    *struct {
 			Code    string `json:"Code"`
 			Message string `json:"Message"`
@@ -80,7 +77,8 @@ type nlpResult struct {
 	} `json:"Response"`
 }
 
-type nlpRequestKeywords struct {
+//KeywordsExtractionKeywords : NLP文段摘要返回keywords字段结构体
+type KeywordsExtractionKeywords struct {
 	Score int    `json:"Score"`
 	Word  string `json:"Word"`
 }

@@ -113,7 +113,6 @@ func reload(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
 			return
 		}
 		cqfunction.ConfigFile = cqfunction.ReadConfig()
-		functionReload()
 		ShellLog(FunctionRequest, "succeed")
 	} else {
 		ShellLog(FunctionRequest, "deny")

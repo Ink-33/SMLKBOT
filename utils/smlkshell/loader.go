@@ -2,7 +2,6 @@ package smlkshell
 
 import (
 	"SMLKBOT/data/botstruct"
-	"SMLKBOT/plugins/vtbmusic"
 )
 
 //The format for SmlkShell command .
@@ -16,6 +15,4 @@ func init() {
 	commandMap["gc"] = gc
 	commandMap["reload"] = reload
 }
-func functionReload() {
-	vtbmusic.Load()
-}
+

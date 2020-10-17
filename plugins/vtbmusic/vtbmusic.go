@@ -3,6 +3,7 @@ package vtbmusic
 import (
 	"SMLKBOT/data/botstruct"
 	"SMLKBOT/data/helps"
+	txc "SMLKBOT/plugins/txcloudutils"
 	"SMLKBOT/utils/cqfunction"
 	"encoding/json"
 	"fmt"
@@ -56,8 +57,8 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest) {
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
 		go cqfunction.CQSendMsg(FunctionRequest, "Searching...")
-		keywordjson := TenKeywordsExtraction(getNLPRequestString(mt.content))
-		keywordStruct := new(nlpResult)
+		keywordjson := txc.TenKeywordsExtraction(mt.content)
+		keywordStruct := new(txc.KeywordsExtractionRespose)
 		err := json.Unmarshal([]byte(keywordjson), keywordStruct)
 		if err != nil {
 			log.Println(err)
@@ -303,7 +304,7 @@ func isNumber(str string) bool {
 	return result
 }
 
-func nlpListToMsg(keywordArray []nlpRequestKeywords) (NLPMsg *string, NLPArray []GetMusicListData) {
+func nlpListToMsg(keywordArray []txc.KeywordsExtractionKeywords) (NLPMsg *string, NLPArray []GetMusicListData) {
 	list1 := GetVTBMusicList(keywordArray[0].Word, "MusicName")
 	list2 := GetVTBMusicList(keywordArray[0].Word, "VtbName")
 
