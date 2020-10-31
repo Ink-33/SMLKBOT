@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Make directory
-        run: mkdir output .
+        run: mkdir output
 
       - name: Build-linux-amd64-HTTP
         run: bash build.sh HTTP && mv SMLKBOT output/SMLKBOT-linux-amd64-HTTP .
