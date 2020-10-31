@@ -34,5 +34,10 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: artifact
-          path: target/SMLK?
+          name: SMLKBOT
+          path: |
+            target/SMLKBOT
+            target/SMLKBOT-arm64
+            target/SMLKBOT-win.exe
+            /target/SMLKBOTSCF
+          
