@@ -9,8 +9,7 @@ SMLKBOT是基于[OneBot协议](https://github.com/howmanybots/onebot)的一个�
 体验群：700080009
 
 ## 0.获取SMLKBOT
-您可以通过Github release获取稳定版，或获取[Night Build](https://eas.smlk.org:8443/job/SMLKBOT/)。  
-请注意: 构建好的SaaS软件包仅发布在[Night Build](https://eas.smlk.org:8443/job/SMLKBOT/).  
+您可以通过Github release获取稳定版
 不过，您可以选择自行构建，构建方式如下
 ``` bash
     bash build.sh [goal]
@@ -25,7 +24,7 @@ SMLKBOT是基于[OneBot协议](https://github.com/howmanybots/onebot)的一个�
 
 
 ### 1.1. Bilibili
-**注意：部分功能需要CQP**
+
 已实装：
 提取聊天中的au号,然后返回音频分享卡片。  
 效果：  
@@ -37,7 +36,7 @@ avid,bvid解析
 ep,cv解析
 
 ### 1.2. VTBMusic
-**注意：本功能需要CQP**  
+  
 VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐资源均来自于VTBMusic，请确认您要分享的歌曲已在VTBMusic正常上架。  
 
 注意: 指令超时时间为**60秒**  
@@ -93,9 +92,11 @@ VTBMusic功能可以快捷地将您喜欢的歌曲分享给大家。所有音乐
 #### 解析：Master
 master代表机器人的所有者,拥有SmlkShell的最高权限  
 数据格式为Json数组  
-目前已实装指令(完整指令包括>SMLK)： 
+目前已实装指令: 
 ```
->SMLK reload //重载配置
+<reload //重载配置
+<status //状态
+<ping //测试延迟
 ```
 #### 解析: API部分  
 
