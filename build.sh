@@ -9,10 +9,12 @@ elif [ "$1" == "HTTP" ]; then
     flags="-s -w -X 'SMLKBOT/utils/smlkshell.date=$(date)' -X 'SMLKBOT/utils/smlkshell.commit="$(git rev-parse --short HEAD)"'"
     if [ "$2" == "win" ]; then
         GOOS=windows go build -ldflags "$flags" -o ./target/SMLKBOT-win.exe
+        echo "Build succeed!"
     elif [ "$2" == "arm" ]; then
         GOARCH=arm64 go build -ldflags "$flags" -o ./target/SMLKBOT-arm64
+        echo "Build succeed!"
     else
-        go build -ldflags "$flags" -o ./target/
+        go build -ldflags "$flags" -o ./target/SMLKBOT
         echo "Build succeed!"
     fi
 else
