@@ -1,34 +1,41 @@
-name: Go
+name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.15.3
 
-    - name: Set up Go 1.x
-      uses: actions/setup-go@v2
-      with:
-        go-version: ^1.15.3
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+      - name: Make directory
+        run: mkdir output .
 
-    - name: Build-linux-amd64-HTTP
-      run: bash build.sh HTTP .
+      - name: Build-linux-amd64-HTTP
+        run: bash build.sh HTTP && mv SMLKBOT output/SMLKBOT-linux-amd64-HTTP .
 
-    - name: Build-linux-arm64-HTTP
-      run: GOARCH=arm64 bash build.sh HTTP .
+      - name: Build-linux-arm64-HTTP
+        run: GOARCH=arm64 bash build.sh HTTP && mv SMLKBOT output/SMLKBOT-linux-arm64-HTTP .
 
-    - name: Build-Win-amd64-HTTP
-      run: GOOS=windows GOARCH=amd64 bash build.sh HTTP .
+      - name: Build-Win-amd64-HTTP
+        run: GOOS=windows GOARCH=amd64 bash build.sh HTTP && mv SMLKBOT.exe output/SMLKBOT-Win-amd64-HTTP .
 
-    - name: Build-TencentSCF
-      run: GOOS=linux bash build.sh TencentSCF
+      - name: Build-TencentSCF
+        run: GOOS=linux bash build.sh TencentSCF && mv SMLKBOTSCF output/SMLKBOTSCF .
+
+      - name: Upload artifact
+        uses: action/upload-artifact@v2
+        with:
+          name: artifact
+          path: output/*
