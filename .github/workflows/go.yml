@@ -1,0 +1,34 @@
+name: Go
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.15.3
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+
+    - name: Build-linux-amd64-HTTP
+      run: bash build.sh HTTP .
+
+    - name: Build-linux-arm64-HTTP
+      run: GOARCH=arm64 bash buildHTTP.
+
+    - name: Build-Win-amd64-HTTP
+      run: GOOS=windows GOARCH=amd64 bash build.sh HTTP .
+
+    - name: Build-TencentSCF
+      run: GOOS=linux bash build.sh TencentSCF
