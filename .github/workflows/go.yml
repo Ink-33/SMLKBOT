@@ -25,7 +25,7 @@ jobs:
       run: bash build.sh HTTP .
 
     - name: Build-linux-arm64-HTTP
-      run: GOARCH=arm64 bash buildHTTP.
+      run: GOARCH=arm64 bash build.sh HTTP.
 
     - name: Build-Win-amd64-HTTP
       run: GOOS=windows GOARCH=amd64 bash build.sh HTTP .
