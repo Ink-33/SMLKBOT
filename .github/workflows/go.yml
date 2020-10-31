@@ -39,5 +39,5 @@ jobs:
             target/SMLKBOT
             target/SMLKBOT-arm64
             target/SMLKBOT-win.exe
-            /target/SMLKBOTSCF
+            target/SMLKBOTSCF
           
