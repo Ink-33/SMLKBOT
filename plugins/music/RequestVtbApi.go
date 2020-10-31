@@ -1,4 +1,4 @@
-package vtbmusic
+package music
 
 import (
 	"SMLKBOT/utils/cqfunction"
@@ -23,14 +23,14 @@ func init() {
 	vtbMusicAPIMap["CDN"] = "GetCDNList"
 	vtbMusicAPIMap["HotList"] = "GetHotMusicList"
 }
-func getAPIAddr(APIName string) string {
+func (e *VTBMusicClient) getAPIAddr(APIName string) string {
 	return vtbMusicAPIProxy + vtbMusicAPIMap[APIName]
 }
 
-//GetVTBMusicList : Get VTBMusic Detail Info.
+//GetMusicList : Get VTBMusic Detail Info.
 //	Method: MusicName,VtbName
-func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
-	ml := new(MusicList)
+func (e *VTBMusicClient) GetMusicList(Keyword string, Method string) (List *VTBMusicList) {
+	ml := new(VTBMusicList)
 	s := make(map[string]string)
 	s["keyword"] = Keyword
 	switch Method {
@@ -50,7 +50,7 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 		log.Fatalln(err)
 	}
 
-	result, err := cqfunction.WebPostJSONContent(getAPIAddr("MusicList"), string(p))
+	result, err := cqfunction.WebPostJSONContent(e.getAPIAddr("MusicList"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
@@ -60,7 +60,7 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 			log.Fatalln(err)
 		}
 	}
-	decode := new(GetMusicList)
+	decode := new(GetVTBMusicList)
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		ml.Total = -1
@@ -73,8 +73,8 @@ func GetVTBMusicList(Keyword string, Method string) (VTBMusicList *MusicList) {
 
 }
 
-//GetVTBMusicCDN : Get VTBMusic CDN Detail Info
-func GetVTBMusicCDN(keyword string) (cdn *GetCDNList) {
+//GetMusicCDN : Get VTBMusic CDN Detail Info
+func (e *VTBMusicClient) GetMusicCDN(keyword string) (cdn *GetVTBCDNList) {
 	//log.Println(keyword)
 	s := make(map[string]string)
 	s["condition"] = "name"
@@ -90,7 +90,7 @@ func GetVTBMusicCDN(keyword string) (cdn *GetCDNList) {
 		log.Fatalln(err)
 	}
 	//log.Println(string(p))
-	result, err := cqfunction.WebPostJSONContent(getAPIAddr("CDN"), string(p))
+	result, err := cqfunction.WebPostJSONContent(e.getAPIAddr("CDN"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
@@ -100,7 +100,7 @@ func GetVTBMusicCDN(keyword string) (cdn *GetCDNList) {
 			log.Fatalln(err)
 		}
 	}
-	decode := new(GetCDNList)
+	decode := new(GetVTBCDNList)
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		log.Println(err)
@@ -110,8 +110,8 @@ func GetVTBMusicCDN(keyword string) (cdn *GetCDNList) {
 }
 
 //GetVTBsList : Get VTB Detail Info.
-func GetVTBsList(VtbsName string) (VList *VtbsList) {
-	vl := new(VtbsList)
+func (e *VTBMusicClient) GetVTBsList(VtbsName string) (VList *VTBsList) {
+	vl := new(VTBsList)
 	s := make(map[string]string)
 	s["condition"] = "ChineseName"
 	s["keyword"] = VtbsName
@@ -126,7 +126,7 @@ func GetVTBsList(VtbsName string) (VList *VtbsList) {
 		log.Fatalln(err)
 	}
 
-	result, err := cqfunction.WebPostJSONContent(getAPIAddr("VtbsList"), string(p))
+	result, err := cqfunction.WebPostJSONContent(e.getAPIAddr("VtbsList"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
@@ -136,7 +136,7 @@ func GetVTBsList(VtbsName string) (VList *VtbsList) {
 			log.Fatalln(err)
 		}
 	}
-	decode := new(GetVtbsList)
+	decode := new(VTBsList)
 	err = json.Unmarshal(result, decode)
 	vl.Data = decode.Data
 	vl.Total = len(vl.Data)
@@ -144,8 +144,8 @@ func GetVTBsList(VtbsName string) (VList *VtbsList) {
 }
 
 //GetVTBMusicDetail : Get music info by using music id.
-func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
-	ml := new(MusicList)
+func (e *VTBMusicClient) GetVTBMusicDetail(VTBMusicID string) (MusicInfo *VTBMusicList) {
+	ml := new(VTBMusicList)
 	postjson := vtbMusicData{
 		MusicID: VTBMusicID,
 	}
@@ -154,7 +154,7 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
 		log.Fatalln(err)
 	}
 
-	result, err := cqfunction.WebPostJSONContent(getAPIAddr("MusicData"), string(p))
+	result, err := cqfunction.WebPostJSONContent(e.getAPIAddr("MusicData"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
@@ -164,15 +164,15 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
 			log.Fatalln(err)
 		}
 	}
-	decode := new(GetMusicData)
+	decode := new(GetVTBMusicData)
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		ml.Total = -1
 		return ml
 	}
-	if decode.GetMusicListData != nil {
-		dataArray := make([]GetMusicListData, 0)
-		dataArray = append(dataArray, *decode.GetMusicListData)
+	if decode.GetVTBMusicListData != nil {
+		dataArray := make([]GetVTBMusicListData, 0)
+		dataArray = append(dataArray, *decode.GetVTBMusicListData)
 		ml.Data = dataArray
 		ml.Total = 1
 		return ml
@@ -182,8 +182,8 @@ func GetVTBMusicDetail(VTBMusicID string) (MusicInfo *MusicList) {
 }
 
 //GetHotMusicList : Get the hot music.
-func GetHotMusicList() (VTBMusicList *MusicList) {
-	ml := new(MusicList)
+func (e *VTBMusicClient) GetHotMusicList() (List *VTBMusicList) {
+	ml := new(VTBMusicList)
 	postjson := vtbSearchJSON{
 		PageIndex: 1,
 		PageRows:  12,
@@ -194,7 +194,7 @@ func GetHotMusicList() (VTBMusicList *MusicList) {
 		log.Fatalln(err)
 	}
 
-	result, err := cqfunction.WebPostJSONContent(getAPIAddr("HotList"), string(p))
+	result, err := cqfunction.WebPostJSONContent(e.getAPIAddr("HotList"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
 		if ok {
@@ -204,7 +204,7 @@ func GetHotMusicList() (VTBMusicList *MusicList) {
 			log.Fatalln(err)
 		}
 	}
-	decode := new(GetMusicList)
+	decode := new(GetVTBMusicList)
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		ml.Total = -1
@@ -215,7 +215,7 @@ func GetHotMusicList() (VTBMusicList *MusicList) {
 	return ml
 }
 
-func (cdn *GetCDNList) match(keyword string) (addr string) {
+func (cdn *GetVTBCDNList) match(keyword string) (addr string) {
 	if cdn.Data != nil {
 		var addr string
 		for _, r := range cdn.Data {
