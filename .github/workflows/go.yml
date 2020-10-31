@@ -23,19 +23,19 @@ jobs:
         run: mkdir output
 
       - name: Build-linux-amd64-HTTP
-        run: bash build.sh HTTP && mv SMLKBOT output/SMLKBOT-linux-amd64-HTTP .
+        run: bash build.sh HTTP
 
       - name: Build-linux-arm64-HTTP
-        run: GOARCH=arm64 bash build.sh HTTP && mv SMLKBOT output/SMLKBOT-linux-arm64-HTTP .
+        run: bash build.sh HTTP arm
 
       - name: Build-Win-amd64-HTTP
-        run: GOOS=windows GOARCH=amd64 bash build.sh HTTP && mv SMLKBOT.exe output/SMLKBOT-Win-amd64-HTTP .
+        run: bash build.sh HTTP win
 
       - name: Build-TencentSCF
-        run: GOOS=linux bash build.sh TencentSCF && mv SMLKBOTSCF output/SMLKBOTSCF .
+        run: bash build.sh TencentSCF
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: artifact
-          path: output/*
+          path: target/*
