@@ -35,7 +35,7 @@ jobs:
         run: GOOS=linux bash build.sh TencentSCF && mv SMLKBOTSCF output/SMLKBOTSCF .
 
       - name: Upload artifact
-        uses: action/upload-artifact@v2
+        uses: actions/upload-artifact@v2
         with:
           name: artifact
           path: output/*
