@@ -46,7 +46,7 @@ func waitingFunc(client Client, FunctionRequest *botstruct.FunctionRequest, BotC
 			}
 			if index <= client.musicListLen() && index > 0 {
 				if c.SenderID == FunctionRequest.SenderID && c.MsgType == FunctionRequest.MsgType {
-					log.SetPrefix("VTBMusic: ")
+					log.SetPrefix("Music: ")
 					log.Println("Known command:", FunctionRequest.Message)
 					switch c.MsgType {
 					case "private":

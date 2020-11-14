@@ -140,6 +140,7 @@ func closeSignalHandler() {
 
 func newHTTPServer() {
 	closeSignalHandler()
+	smlkshell.ConsoleHandler()
 	path := gjson.Get(*cqfunction.ConfigFile, "CoolQ.HTTPServer.ListeningPath").String()
 	port := gjson.Get(*cqfunction.ConfigFile, "CoolQ.HTTPServer.ListeningPort").String()
 

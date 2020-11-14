@@ -218,9 +218,9 @@ func (e *VTBMusicClient) GetHotMusicList() (List *VTBMusicList) {
 func (cdn *GetVTBCDNList) match(keyword string) (addr string) {
 	if cdn.Data != nil {
 		var addr string
-		for _, r := range cdn.Data {
-			if r.Name == keyword {
-				addr = r.URL
+		for i := range cdn.Data {
+			if cdn.Data[i].Name == keyword {
+				addr = cdn.Data[i].URL
 				return addr
 			}
 		}

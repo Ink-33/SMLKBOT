@@ -14,7 +14,7 @@ var date, version, commit string = "DevBuild", "DevBuild", "DevBuild"
 
 //IsSCF is the mark to judge whether SMLKBOT is running in SaaS mode.
 //	This variable should be set by using -ldflags while building.
-var IsSCF string
+var IsSCF string = "no"
 var upTime string
 
 //RoleHandler : Fetching user's role.
@@ -22,8 +22,8 @@ func RoleHandler(FunctionRequest *botstruct.FunctionRequest) (role *botstruct.Ro
 	role = new(botstruct.Role)
 	role.RoleName = "member"
 	role.RoleLevel = 0
-	for _, v := range FunctionRequest.MasterID {
-		if FunctionRequest.SenderID == v.String() {
+	for i := range FunctionRequest.MasterID {
+		if FunctionRequest.SenderID == FunctionRequest.MasterID[i].String() {
 			role.RoleLevel = 3
 			role.RoleName = "master"
 			return
@@ -123,7 +123,7 @@ func reload(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
 func GetStatus() string {
 	m := new(runtime.MemStats)
 	runtime.ReadMemStats(m)
-	return fmt.Sprintf("$SMLKBOT>\nBuild with: %s\nBuild Arch&OS: %s-%s\nBuild Date: %s\nUptime: %s\nVersion: %s\nCommit: %s\nisSCF: %s\nNumGoroutine: %d\nNumCPU: %d\nNumProcs: %d\nAllocated: %dBytes\nNumGC: %d\nForceGC: %d\nLsatGC:%s", runtime.Version(), runtime.GOARCH, runtime.GOOS, date, upTime, version, commit, IsSCF, runtime.NumGoroutine(), runtime.NumCPU(), runtime.GOMAXPROCS(0), m.Sys, m.NumGC, m.NumForcedGC, time.Unix(0, int64(m.LastGC)).Format("2006-01-02 15:04:05"))
+	return fmt.Sprintf("$SMLKBOT>\nBuild with: %s\nBuild Arch&OS: %s-%s\nBuild Date: %s\nUptime: %s\nVersion: %s\nCommit: %s\nisSCF: %s\nNumGoroutine: %d\nNumCPU: %d\nNumProcs: %d\nTotalAlloc: %d\nSys(mem): %dBytes\nNumGC: %d\nForceGC: %d\nLsatGC:%s", runtime.Version(), runtime.GOARCH, runtime.GOOS, date, upTime, version, commit, IsSCF, runtime.NumGoroutine(), runtime.NumCPU(), runtime.GOMAXPROCS(0), m.TotalAlloc, m.Sys, m.NumGC, m.NumForcedGC, time.Unix(0, int64(m.LastGC)).Format("2006-01-02 15:04:05"))
 }
 
 func init() {

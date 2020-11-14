@@ -147,11 +147,13 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 func (e *VTBMusicClient) listToMsg(list ...*VTBMusicList) (ListMsg *string, ListArray []GetVTBMusicListData) {
 	var q = make([]string, 0)
 	var listReturn = make([]GetVTBMusicListData, 0)
-	for _, v := range list {
-		for i, r := range v.Data {
-			listReturn = append(listReturn, r)
-			t := strconv.Itoa(i+1) + "," + r.VocalName + "-" + r.OriginName
+	var c int = 1
+	for i := range list {
+		for j := range list[i].Data {
+			listReturn = append(listReturn, list[i].Data[j])
+			t := strconv.Itoa(c) + "," + list[i].Data[j].VocalName + "-" + list[i].Data[j].OriginName
 			q = append(q, t)
+			c++
 		}
 	}
 	msg := strings.Join(q, "\n")
@@ -197,31 +199,31 @@ func (e *VTBMusicClient) nlpListToMsg(keywordArray []txc.KeywordsExtractionKeywo
 
 	_, ListArray := e.listToMsg(list1, list2)
 
-	for k1, v1 := range keywordArray {
+	for k1 := range keywordArray {
 		if len(keywordArray) == 1 {
 			nlpArray = ListArray
 			break
 		}
 		switch k1 {
 		case 1:
-			reg := regexp.MustCompile("(?i)(" + v1.Word + ")")
-			for _, v2 := range ListArray {
-				if reg.MatchString(v2.VocalName) || reg.MatchString(v2.OriginName) {
-					nlpArray = append(nlpArray, v2)
+			reg := regexp.MustCompile("(?i)(" + keywordArray[k1].Word + ")")
+			for k2 := range ListArray {
+				if reg.MatchString(ListArray[k2].VocalName) || reg.MatchString(ListArray[k2].OriginName) {
+					nlpArray = append(nlpArray, ListArray[k2])
 				}
 			}
 		default:
-			reg := regexp.MustCompile("(?i)(" + v1.Word + ")")
-			for _, v2 := range nlpArray {
-				if reg.MatchString(v2.VocalName) || reg.MatchString(v2.OriginName) {
-					nlpArray = append(nlpArray, v2)
+			reg := regexp.MustCompile("(?i)(" + keywordArray[k1].Word + ")")
+			for k2 := range nlpArray {
+				if reg.MatchString(nlpArray[k2].VocalName) || reg.MatchString(nlpArray[k2].OriginName) {
+					nlpArray = append(nlpArray, nlpArray[k2])
 				}
 			}
 		}
 
 	}
-	for k, v := range nlpArray {
-		tmp := strconv.Itoa(k+1) + "," + v.VocalName + "-" + v.OriginName
+	for k := range nlpArray {
+		tmp := strconv.Itoa(k+1) + "," + nlpArray[k].VocalName + "-" + nlpArray[k].OriginName
 		nlpMsgArray = append(nlpMsgArray, tmp)
 	}
 	msg := strings.Join(nlpMsgArray, "\n")
