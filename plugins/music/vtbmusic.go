@@ -88,7 +88,6 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 				client.sendMsg(FunctionRequest, nlpMsg, nlpArray, mt, isHot)
 			}
 		}
-		break
 	case 2:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command: Get hot music.")
@@ -102,7 +101,6 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 			isHot = &isHotMusic{true, 1, &list.Total}
 			client.sendMsg(FunctionRequest, ListMsg, ListArray, nil, isHot)
 		}
-		break
 	case 3:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
@@ -112,7 +110,6 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 			wc.isTimeOut = false
 			waiting <- wc
 		}
-		break
 	case 4:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
@@ -128,19 +125,15 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 			msgMake = client.getMusicDetailandCQCode(1)
 		}
 		cqfunction.CQSendMsg(FunctionRequest, msgMake)
-		break
 	case 5:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
 		switch FunctionRequest.MsgType {
 		case "private":
 			go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, help.VTBMusic, &FunctionRequest.BotConfig)
-			break
 		case "group":
 			go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, help.VTBMusic, &FunctionRequest.BotConfig)
-			break
 		}
-		break
 	}
 }
 
@@ -167,7 +160,7 @@ func (e *VTBMusicClient) getMusicDetail(index int) (info *VTBMusicInfo) {
 	i.MusicName = e.MusicList[index-1].OriginName
 	cdn := e.GetMusicCDN("")
 	if strings.Contains(e.MusicList[index-1].CDN, ":") {
-		reg := regexp.MustCompile("(\\d+):(\\d+):(\\d+)")
+		reg := regexp.MustCompile(`(\d+):(\d+):(\d+)`)
 		match := reg.FindStringSubmatch(e.MusicList[index-1].CDN)
 		i.Cover = cdn.match(match[1]) + e.MusicList[index-1].CoverImg
 		i.MusicURL = cdn.match(match[2]) + e.MusicList[index-1].Music
@@ -238,7 +231,7 @@ func (e *VTBMusicClient) sendMsg(FunctionRequest *botstruct.FunctionRequest, Lis
 	do := func() {
 		counter++
 		w := new(waitingChan)
-		w.isNewRequest = true
+		w.IsNewRequest = true
 		w.RequestSenderID = FunctionRequest.SenderID
 		w.FunctionRequest = *FunctionRequest
 		w.isTimeOut = false
@@ -268,7 +261,6 @@ func (e *VTBMusicClient) sendMsg(FunctionRequest *botstruct.FunctionRequest, Lis
 				msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\n《" + MsgType.content + "》共找到多达" + strconv.Itoa(lens) + "个结果,建议您更换关键词重试,获取使用帮助请发送vtbhelp"
 			}
 			go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, msgMake, &FunctionRequest.BotConfig)
-			break
 		case "group":
 			if lens == 1 {
 				msgMake = e.getMusicDetailandCQCode(1)
@@ -289,7 +281,6 @@ func (e *VTBMusicClient) sendMsg(FunctionRequest *botstruct.FunctionRequest, Lis
 				}
 				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, msgtoGroup, &FunctionRequest.BotConfig)
 			}
-			break
 		}
 
 	}

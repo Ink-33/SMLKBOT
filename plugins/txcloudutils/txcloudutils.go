@@ -23,20 +23,16 @@ func TxCloudUtils(FunctionRequest *botstruct.FunctionRequest) {
 		switch msgArray[2] {
 		case "--keywordext":
 			nlpKeywords(FunctionRequest, msgArray[3:])
-			break
 		case "--summarization":
 			nlpSummarization(FunctionRequest,msgArray[3:])
 		default:
 			cqfunction.CQSendMsg(FunctionRequest, "用法错误，请发送txc --help获取帮助")
-			break
 		}
 
 	case "--help":
 		sendHelp(FunctionRequest)
-		break
 	default:
 		cqfunction.CQSendMsg(FunctionRequest, "用法错误，请发送txc --help获取帮助")
-		break
 	}
 
 }

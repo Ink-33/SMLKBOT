@@ -116,7 +116,3 @@ type VTBsList struct {
 	Total int
 	Data  []GetVTBVtbsData
 }
-
-type cdnResult interface {
-	match(string) string
-}

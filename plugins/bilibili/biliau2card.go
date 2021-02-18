@@ -34,20 +34,16 @@ func Au2Card(FunctionRequest *botstruct.FunctionRequest) {
 			switch FunctionRequest.MsgType {
 			case "private":
 				go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, msgMake, &FunctionRequest.BotConfig)
-				break
 			case "group":
 				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, msgMake, &FunctionRequest.BotConfig)
-				break
 			}
 		} else {
 			cqCodeMake := "[CQ:music,type=custom,url=" + AuInfo.AuJumpURL + ",audio=" + AuInfo.AuURL + ",title=" + AuInfo.AuTitle + ",content=" + AuInfo.AuDesp + ",image=" + AuInfo.AuCoverURL + "@180w_180h]"
 			switch FunctionRequest.MsgType {
 			case "private":
 				go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, cqCodeMake, &FunctionRequest.BotConfig)
-				break
 			case "group":
 				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, cqCodeMake, &FunctionRequest.BotConfig)
-				break
 			}
 		}
 	}

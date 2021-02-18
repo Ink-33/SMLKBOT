@@ -138,6 +138,10 @@ func (e *VTBMusicClient) GetVTBsList(VtbsName string) (VList *VTBsList) {
 	}
 	decode := new(VTBsList)
 	err = json.Unmarshal(result, decode)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
 	vl.Data = decode.Data
 	vl.Total = len(vl.Data)
 	return vl
@@ -230,22 +234,14 @@ func (cdn *GetVTBCDNList) match(keyword string) (addr string) {
 
 type vtbCDNJSON struct {
 	Search    map[string]string `json:"search"`
-	condition string
-	keyword   string
-	PageIndex int `json:"pageIndex"`
-	PageRows  int `json:"pageRows"`
+	PageIndex int               `json:"pageIndex"`
+	PageRows  int               `json:"pageRows"`
 }
 type vtbSearchJSON struct {
 	Search    map[string]string `json:"search"`
-	condition string
-	keyword   string
-	PageIndex int `json:"pageIndex"`
-	PageRows  int `json:"pageRows"`
+	PageIndex int               `json:"pageIndex"`
+	PageRows  int               `json:"pageRows"`
 }
 type vtbMusicData struct {
 	MusicID string `json:"id"`
-}
-type vtbHotMusic struct {
-	PageIndex int `json:"pageIndex"`
-	PageRows  int `json:"pageRows"`
 }

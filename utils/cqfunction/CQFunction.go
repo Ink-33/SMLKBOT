@@ -72,10 +72,8 @@ func CQSendMsg(FunctionRequest *botstruct.FunctionRequest, msg string) {
 	switch FunctionRequest.MsgType {
 	case "private":
 		go CQSendPrivateMsg(FunctionRequest.SenderID, msg, &FunctionRequest.BotConfig)
-		break
 	case "group":
 		go CQSendGroupMsg(FunctionRequest.GroupID, msg, &FunctionRequest.BotConfig)
-		break
 	}
 }
 

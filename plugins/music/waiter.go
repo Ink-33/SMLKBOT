@@ -12,7 +12,7 @@ var waiting = make(chan *waitingChan, 15)
 var counter int8 = 0
 
 type newRequest struct {
-	isNewRequest    bool
+	IsNewRequest    bool
 	RequestSenderID string
 }
 type waitingChan struct {
@@ -31,7 +31,7 @@ func waitingFunc(client Client, FunctionRequest *botstruct.FunctionRequest, BotC
 	}(FunctionRequest)
 	for {
 		c := <-waiting
-		if c.isNewRequest && c.RequestSenderID == FunctionRequest.SenderID && c.HMACSHA1 != FunctionRequest.HMACSHA1 {
+		if c.IsNewRequest && c.RequestSenderID == FunctionRequest.SenderID && c.HMACSHA1 != FunctionRequest.HMACSHA1 {
 			counter--
 			return
 		}
@@ -53,13 +53,11 @@ func waitingFunc(client Client, FunctionRequest *botstruct.FunctionRequest, BotC
 						cqCodeMake := client.getMusicDetailandCQCode(index)
 						counter--
 						go cqfunction.CQSendPrivateMsg(c.SenderID, cqCodeMake, BotConfig)
-						break
 					case "group":
 						if c.GroupID == FunctionRequest.GroupID {
 							cqCodeMake := client.getMusicDetailandCQCode(index)
 							counter--
 							go cqfunction.CQSendGroupMsg(c.GroupID, cqCodeMake, BotConfig)
-							break
 						}
 					}
 					break

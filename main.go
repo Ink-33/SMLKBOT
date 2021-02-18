@@ -57,7 +57,7 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		}
 		hmacSH1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
 		hmacSH1.Reset()
-		hmacSH1.Write(body)
+		_, _ = hmacSH1.Write(body)
 		var signature string = strings.Replace(r.Header.Get("X-Signature"), "sha1=", "", 1)
 		var hmacresult string = fmt.Sprintf("%x", hmacSH1.Sum(nil))
 		if signature == "" {
@@ -92,7 +92,7 @@ func scfHandler(event apigwEvent) (result *scfReturn, err error) {
 	}
 	hmacSH1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+event.Headers.BotID+".HTTPAPIPostSecret").String()))
 	hmacSH1.Reset()
-	hmacSH1.Write([]byte(event.Body))
+	_, _ = hmacSH1.Write([]byte(event.Body))
 	var signature string = strings.Replace(event.Headers.Signature, "sha1=", "", 1)
 	var hmacresult string = fmt.Sprintf("%x", hmacSH1.Sum(nil))
 	if signature == "" || signature != hmacresult {

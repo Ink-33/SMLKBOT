@@ -55,15 +55,12 @@ func ShellLog(FunctionRequest *botstruct.FunctionRequest, result string) {
 	switch result {
 	case "succeed":
 		msgMake = "$SmlkShell> Succeed."
-		break
 	case "deny":
 		msgMake = "$SmlkShell> Permission denied."
-		break
 	case "disabled":
 		msgMake = "$SmlkShell> disabled."
 	case "nofonud":
 		msgMake = fmt.Sprintf("$SmlkShell> %s: command not found", strings.Replace(FunctionRequest.Message, prefix, "", 1))
-		break
 	default:
 		msgMake = result
 	}
