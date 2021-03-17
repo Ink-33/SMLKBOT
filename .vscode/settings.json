@@ -32,5 +32,10 @@
         "vtbhelp",
         "vtbid",
         "vtbmusic"
-    ]
+    ],
+    "gopls": {
+        "formatting.gofumpt": true,
+        "formatting.local": "github.com/Ink-33/SMLKBOT"
+    },
+    "go.lintOnSave": "off"
 }

@@ -1,7 +1,6 @@
 package cqfunction
 
 import (
-	"SMLKBOT/data/botstruct"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,34 +9,35 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/Ink-33/SMLKBOT/data/botstruct"
 )
 
-//TimeOutError : A time out error
+// TimeOutError : A time out error
 type TimeOutError struct {
 	Addr string
 }
 
 func (e *TimeOutError) Error() string {
-
 	return fmt.Sprint("Time out : " + e.Addr)
 }
 
-//ConfigFile : bot config file
+// ConfigFile : bot config file
 var ConfigFile *string
 
 func init() {
 	ConfigFile = ReadConfig()
 }
 
-//CQSendGroupMsg : Send Group message by using CoolQ HTTPAPI
-func CQSendGroupMsg(id, msg string, BotConfig *botstruct.BotConfig) {
+// CQSendGroupMsg : Send Group message by using CoolQ HTTPAPI
+func CQSendGroupMsg(id, msg string, botConfig *botstruct.BotConfig) {
 	msgstruct := &CQGroupMsg{ID: id, Message: msg}
 	msgjson, err := json.Marshal(msgstruct)
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
-	_, err = WebPostJSONContent(BotConfig.HTTPAPIAddr+"/send_group_msg?access_token="+BotConfig.HTTPAPIToken, string(msgjson))
+	_, err = WebPostJSONContent(botConfig.HTTPAPIAddr+"/send_group_msg?access_token="+botConfig.HTTPAPIToken, string(msgjson))
 	if err != nil {
 		_, ok := err.(*TimeOutError)
 		if ok {
@@ -48,15 +48,15 @@ func CQSendGroupMsg(id, msg string, BotConfig *botstruct.BotConfig) {
 	}
 }
 
-//CQSendPrivateMsg : Send private message by using CoolQ HTTPAPI
-func CQSendPrivateMsg(id, msg string, BotConfig *botstruct.BotConfig) {
+// CQSendPrivateMsg : Send private message by using CoolQ HTTPAPI
+func CQSendPrivateMsg(id, msg string, botConfig *botstruct.BotConfig) {
 	msgstruct := &CQPrivateMsg{ID: id, Message: msg}
 	msgjson, err := json.Marshal(msgstruct)
 	if err != nil {
 		log.Println(err.Error())
 		return
 	}
-	_, err = WebPostJSONContent(BotConfig.HTTPAPIAddr+"/send_private_msg?access_token="+BotConfig.HTTPAPIToken, string(msgjson))
+	_, err = WebPostJSONContent(botConfig.HTTPAPIAddr+"/send_private_msg?access_token="+botConfig.HTTPAPIToken, string(msgjson))
 	if err != nil {
 		_, ok := err.(*TimeOutError)
 		if ok {
@@ -67,25 +67,25 @@ func CQSendPrivateMsg(id, msg string, BotConfig *botstruct.BotConfig) {
 	}
 }
 
-//CQSendMsg : Send message
-func CQSendMsg(FunctionRequest *botstruct.FunctionRequest, msg string) {
-	switch FunctionRequest.MsgType {
+// CQSendMsg : Send message
+func CQSendMsg(functionRequest *botstruct.FunctionRequest, msg string) {
+	switch functionRequest.MsgType {
 	case "private":
-		go CQSendPrivateMsg(FunctionRequest.SenderID, msg, &FunctionRequest.BotConfig)
+		go CQSendPrivateMsg(functionRequest.SenderID, msg, &functionRequest.BotConfig)
 	case "group":
-		go CQSendGroupMsg(FunctionRequest.GroupID, msg, &FunctionRequest.BotConfig)
+		go CQSendGroupMsg(functionRequest.GroupID, msg, &functionRequest.BotConfig)
 	}
 }
 
-//GetWebContent : Get web Content by using GET request.
-func GetWebContent(Addr string) (body []byte, err error) {
-	var content = make([]byte, 0)
+// GetWebContent : Get web Content by using GET request.
+func GetWebContent(addr string) (body []byte, err error) {
+	content := make([]byte, 0)
 	client := &http.Client{
 		Transport: nil,
 		Jar:       nil,
 		Timeout:   10 * time.Second,
 	}
-	request, err := http.NewRequest("GET", Addr, nil)
+	request, err := http.NewRequest("GET", addr, nil)
 	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4239.0 Safari/537.36")
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func GetWebContent(Addr string) (body []byte, err error) {
 		_, ok := err.(net.Error)
 		if ok {
 			err1 := &TimeOutError{
-				Addr: Addr,
+				Addr: addr,
 			}
 			return content, err1
 		}
@@ -108,16 +108,16 @@ func GetWebContent(Addr string) (body []byte, err error) {
 	return content, nil
 }
 
-//WebPostJSONContent : Get web Content by using GET request.
-func WebPostJSONContent(Addr string, postbody string) (body []byte, err error) {
-	var content = make([]byte, 0)
+// WebPostJSONContent : Get web Content by using GET request.
+func WebPostJSONContent(addr string, postbody string) (body []byte, err error) {
+	content := make([]byte, 0)
 	client := &http.Client{
 		Transport: nil,
 		Jar:       nil,
 		Timeout:   10 * time.Second,
 	}
 	pb := strings.NewReader(postbody)
-	request, err := http.NewRequest("POST", Addr, pb)
+	request, err := http.NewRequest("POST", addr, pb)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4117.2 Safari/537.36")
 	if err != nil {
@@ -128,7 +128,7 @@ func WebPostJSONContent(Addr string, postbody string) (body []byte, err error) {
 		_, ok := err.(net.Error)
 		if ok {
 			err1 := &TimeOutError{
-				Addr: Addr,
+				Addr: addr,
 			}
 			return content, err1
 		}
@@ -141,7 +141,7 @@ func WebPostJSONContent(Addr string, postbody string) (body []byte, err error) {
 	return content, nil
 }
 
-//ReadConfig : Read config file.
+// ReadConfig : Read config file.
 func ReadConfig() *string {
 	file, err := ioutil.ReadFile("conf.json")
 	if err != nil {
@@ -151,18 +151,18 @@ func ReadConfig() *string {
 	return &result
 }
 
-//ReturnConfig : Return the config
+// ReturnConfig : Return the config
 func ReturnConfig() *string {
 	return ConfigFile
 }
 
-//CQPrivateMsg : 私聊消息
+// CQPrivateMsg : 私聊消息
 type CQPrivateMsg struct {
 	ID      string `json:"user_id"`
 	Message string `json:"message"`
 }
 
-//CQGroupMsg : 群聊消息
+// CQGroupMsg : 群聊消息
 type CQGroupMsg struct {
 	ID      string `json:"group_id"`
 	Message string `json:"message"`

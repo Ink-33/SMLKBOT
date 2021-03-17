@@ -1,14 +1,15 @@
 package bilibili
 
 import (
-	"SMLKBOT/data/botstruct"
-	"SMLKBOT/utils/cqfunction"
 	"log"
 	"regexp"
 	"strings"
+
+	"github.com/Ink-33/SMLKBOT/data/botstruct"
+	"github.com/Ink-33/SMLKBOT/utils/cqfunction"
 )
 
-//GetAu : Get audio number by regexp.
+// GetAu : Get audio number by regexp.
 func GetAu(msg string) (au string) {
 	if strings.Contains(msg, "CQ:") {
 		return ""
@@ -21,8 +22,8 @@ func GetAu(msg string) (au string) {
 }
 
 // Au2Card : Handle meassage and send music card.
-func Au2Card(FunctionRequest *botstruct.FunctionRequest) {
-	au := GetAu(FunctionRequest.Message)
+func Au2Card(fr *botstruct.FunctionRequest) {
+	au := GetAu(fr.Message)
 
 	if au != "" {
 		log.SetPrefix("BiliAu2Card: ")
@@ -31,19 +32,19 @@ func Au2Card(FunctionRequest *botstruct.FunctionRequest) {
 
 		if !AuInfo.AuStatus {
 			msgMake := "BiliAu2Card: AU" + AuInfo.AuNumber + AuInfo.AuMsg
-			switch FunctionRequest.MsgType {
+			switch fr.MsgType {
 			case "private":
-				go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, msgMake, &FunctionRequest.BotConfig)
+				go cqfunction.CQSendPrivateMsg(fr.SenderID, msgMake, &fr.BotConfig)
 			case "group":
-				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, msgMake, &FunctionRequest.BotConfig)
+				go cqfunction.CQSendGroupMsg(fr.GroupID, msgMake, &fr.BotConfig)
 			}
 		} else {
 			cqCodeMake := "[CQ:music,type=custom,url=" + AuInfo.AuJumpURL + ",audio=" + AuInfo.AuURL + ",title=" + AuInfo.AuTitle + ",content=" + AuInfo.AuDesp + ",image=" + AuInfo.AuCoverURL + "@180w_180h]"
-			switch FunctionRequest.MsgType {
+			switch fr.MsgType {
 			case "private":
-				go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, cqCodeMake, &FunctionRequest.BotConfig)
+				go cqfunction.CQSendPrivateMsg(fr.SenderID, cqCodeMake, &fr.BotConfig)
 			case "group":
-				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, cqCodeMake, &FunctionRequest.BotConfig)
+				go cqfunction.CQSendGroupMsg(fr.GroupID, cqCodeMake, &fr.BotConfig)
 			}
 		}
 	}

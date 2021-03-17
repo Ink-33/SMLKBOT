@@ -1,9 +1,9 @@
 package main
 
 import (
-	"SMLKBOT/plugins/bilibili"
-	"SMLKBOT/plugins/txcloudutils"
-	"SMLKBOT/plugins/music"
+	"github.com/Ink-33/SMLKBOT/plugins/bilibili"
+	"github.com/Ink-33/SMLKBOT/plugins/music"
+	"github.com/Ink-33/SMLKBOT/plugins/txcloudutils"
 )
 
 var functionList = make(map[string]functionFormat)
@@ -13,4 +13,3 @@ func init() {
 	functionList["Music"] = music.MsgHandler
 	functionList["TxCloudUtils"] = txcloudutils.TxCloudUtils
 }
-

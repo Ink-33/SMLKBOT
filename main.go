@@ -1,9 +1,6 @@
 package main
 
 import (
-	"SMLKBOT/data/botstruct"
-	"SMLKBOT/utils/cqfunction"
-	"SMLKBOT/utils/smlkshell"
 	"crypto/hmac"
 	"crypto/sha1"
 	"fmt"
@@ -16,22 +13,26 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/Ink-33/SMLKBOT/data/botstruct"
+	"github.com/Ink-33/SMLKBOT/utils/cqfunction"
+	"github.com/Ink-33/SMLKBOT/utils/smlkshell"
+
 	"github.com/tencentyun/scf-go-lib/cloudfunction"
 	"github.com/tidwall/gjson"
 )
 
 type functionFormat func(*botstruct.FunctionRequest)
 
-func judgeandrun(name string, functionFormat functionFormat, FunctionRequest *botstruct.FunctionRequest) {
+func judgeandrun(name string, functionFormat functionFormat, fr *botstruct.FunctionRequest) {
 	config := gjson.Get(*cqfunction.ConfigFile, "Feature.0").String()
 	if gjson.Get(config, name).Bool() {
-		go functionFormat(FunctionRequest)
+		go functionFormat(fr)
 	}
 }
 
-//MsgHandler converts HTTP Post Body to MsgInfo Struct.
-func MsgHandler(hmacsha1 string, raw []byte) (MsgInfo *botstruct.MsgInfo) {
-	var mi = new(botstruct.MsgInfo)
+// MsgHandler converts HTTP Post Body to MsgInfo Struct.
+func MsgHandler(hmacsha1 string, raw []byte) (msgInfo *botstruct.MsgInfo) {
+	mi := new(botstruct.MsgInfo)
 	mi.TimeStamp = gjson.GetBytes(raw, "time").Int()
 	mi.MsgType = gjson.GetBytes(raw, "message_type").String()
 	mi.GroupID = gjson.GetBytes(raw, "group_id").String()
@@ -42,7 +43,7 @@ func MsgHandler(hmacsha1 string, raw []byte) (MsgInfo *botstruct.MsgInfo) {
 	return mi
 }
 
-//HTTPhandler : Handle request type before handling message.
+// HTTPhandler : Handle request type before handling message.
 func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 	method := r.Method
 	if method != "POST" {
@@ -58,29 +59,26 @@ func HTTPhandler(w http.ResponseWriter, r *http.Request) {
 		hmacSH1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+rid+".HTTPAPIPostSecret").String()))
 		hmacSH1.Reset()
 		_, _ = hmacSH1.Write(body)
-		var signature string = strings.Replace(r.Header.Get("X-Signature"), "sha1=", "", 1)
-		var hmacresult string = fmt.Sprintf("%x", hmacSH1.Sum(nil))
-		if signature == "" {
+		signature := strings.Replace(r.Header.Get("X-Signature"), "sha1=", "", 1)
+		hmacresult := fmt.Sprintf("%x", hmacSH1.Sum(nil))
+		if signature == "" || signature != hmacresult {
 			w.WriteHeader(401)
 			fmt.Fprint(w, "Unauthorized.")
-		} else if signature != hmacresult {
-			w.WriteHeader(401)
-			fmt.Fprint(w, "Unauthorized.")
-		} else {
-			if gjson.GetBytes(body, "meta_event_type").String() != "heartbeat" {
-				var msgInfoTmp = MsgHandler(signature, body)
-				msgInfoTmp.RobotID = rid
-				var bc = new(botstruct.BotConfig)
-				bc.HTTPAPIAddr = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
-				bc.HTTPAPIToken = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
-				bc.MasterID = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Master").Array()
-				log.SetPrefix("SMLKBOT: ")
-				fr := &botstruct.FunctionRequest{MsgInfo: *msgInfoTmp, BotConfig: *bc}
-				go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(fr).RoleName)
-				smlkshell.SmlkShell(fr)
-				for k, v := range functionList {
-					go judgeandrun(k, v, fr)
-				}
+			return
+		}
+		if gjson.GetBytes(body, "meta_event_type").String() != "heartbeat" {
+			msgInfoTmp := MsgHandler(signature, body)
+			msgInfoTmp.RobotID = rid
+			bc := new(botstruct.BotConfig)
+			bc.HTTPAPIAddr = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
+			bc.HTTPAPIToken = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
+			bc.MasterID = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Master").Array()
+			log.SetPrefix("SMLKBOT: ")
+			fr := &botstruct.FunctionRequest{MsgInfo: *msgInfoTmp, BotConfig: *bc}
+			go log.Println("RobotID:", rid, "Received message:", msgInfoTmp.Message, "from:", "User:", msgInfoTmp.SenderID, "Group:", msgInfoTmp.GroupID, "Role:", smlkshell.RoleHandler(fr).RoleName)
+			smlkshell.SmlkShell(fr)
+			for k, v := range functionList {
+				go judgeandrun(k, v, fr)
 			}
 		}
 	}
@@ -93,15 +91,15 @@ func scfHandler(event apigwEvent) (result *scfReturn, err error) {
 	hmacSH1 := hmac.New(sha1.New, []byte(gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+event.Headers.BotID+".HTTPAPIPostSecret").String()))
 	hmacSH1.Reset()
 	_, _ = hmacSH1.Write([]byte(event.Body))
-	var signature string = strings.Replace(event.Headers.Signature, "sha1=", "", 1)
-	var hmacresult string = fmt.Sprintf("%x", hmacSH1.Sum(nil))
+	signature := strings.Replace(event.Headers.Signature, "sha1=", "", 1)
+	hmacresult := fmt.Sprintf("%x", hmacSH1.Sum(nil))
 	if signature == "" || signature != hmacresult {
 		return newSCFReturn(401, "Unauthorized."), nil
 	}
 	if gjson.Get(event.Body, "meta_event_type").String() != "heartbeat" {
-		var msgInfoTmp = MsgHandler(signature, []byte(event.Body))
+		msgInfoTmp := MsgHandler(signature, []byte(event.Body))
 		msgInfoTmp.RobotID = event.Headers.BotID
-		var bc = new(botstruct.BotConfig)
+		bc := new(botstruct.BotConfig)
 		bc.HTTPAPIAddr = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIAddr").String()
 		bc.HTTPAPIToken = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Api."+msgInfoTmp.RobotID+".HTTPAPIToken").String()
 		bc.MasterID = gjson.Get(*cqfunction.ConfigFile, "CoolQ.Master").Array()
@@ -112,7 +110,6 @@ func scfHandler(event apigwEvent) (result *scfReturn, err error) {
 		for k, v := range functionList {
 			go judgeandrun(k, v, fr)
 		}
-
 	}
 	return newSCFReturn(200, "Success."), nil
 }
@@ -127,6 +124,7 @@ func newSCFReturn(status int, msg string) *scfReturn {
 	}
 	return r
 }
+
 func closeSignalHandler() {
 	channel := make(chan os.Signal, 2)
 	signal.Notify(channel, os.Interrupt, syscall.SIGTERM)
@@ -166,7 +164,6 @@ func main() {
 	default:
 		newHTTPServer()
 	}
-
 }
 
 type apigwEvent struct {

@@ -1,16 +1,17 @@
 package music
 
 import (
-	"SMLKBOT/data/botstruct"
-	"SMLKBOT/data/helps"
-	txc "SMLKBOT/plugins/txcloudutils"
-	"SMLKBOT/utils/cqfunction"
 	"encoding/json"
 	"fmt"
 	"log"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Ink-33/SMLKBOT/data/botstruct"
+	help "github.com/Ink-33/SMLKBOT/data/helps"
+	txc "github.com/Ink-33/SMLKBOT/plugins/txcloudutils"
+	"github.com/Ink-33/SMLKBOT/utils/cqfunction"
 )
 
 type isHotMusic struct {
@@ -23,8 +24,8 @@ type isHotMusic struct {
 	TotalQuantity *int
 }
 
-//VTBMusic : The main function of VTBMusic
-func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
+// VTBMusic : The main function of VTBMusic
+func VTBMusic(fr *botstruct.FunctionRequest, mt *msgType) {
 	client := &VTBMusicClient{}
 	ctype := mt.ctype
 	var isHot *isHotMusic
@@ -34,14 +35,14 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 	case 1:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
-		go cqfunction.CQSendMsg(FunctionRequest, "Searching...")
+		go cqfunction.CQSendMsg(fr, "Searching...")
 		keywordjson := txc.TenKeywordsExtraction(mt.content, 3)
 		keywordStruct := new(txc.KeywordsExtractionRespose)
 		err := json.Unmarshal([]byte(keywordjson), keywordStruct)
 		if err != nil {
 			log.Println(err)
 			msgMake := "An unexpected error occurred while fetching data, please check console."
-			cqfunction.CQSendMsg(FunctionRequest, msgMake)
+			cqfunction.CQSendMsg(fr, msgMake)
 			return
 		}
 		keywordArray := keywordStruct.Response.Keywords
@@ -51,7 +52,7 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 			list2 := client.GetMusicList(mt.content, "VtbName")
 			if list1.Total == -1 || list2.Total == -1 {
 				msgMake := "An unexpected error occurred while fetching data, please check console."
-				cqfunction.CQSendMsg(FunctionRequest, msgMake)
+				cqfunction.CQSendMsg(fr, msgMake)
 				return
 			}
 			ListMsg, ListArray := client.listToMsg(list1, list2)
@@ -59,17 +60,17 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 				list := client.GetHotMusicList()
 				ListMsg, ListArray := client.listToMsg(list)
 				isHot = &isHotMusic{true, 0, nil}
-				client.sendMsg(FunctionRequest, ListMsg, ListArray, mt, isHot)
+				client.sendMsg(fr, ListMsg, ListArray, mt, isHot)
 			} else {
 				isHot = &isHotMusic{false, 0, nil}
-				client.sendMsg(FunctionRequest, ListMsg, ListArray, mt, isHot)
+				client.sendMsg(fr, ListMsg, ListArray, mt, isHot)
 			}
 		} else {
 			nlpMsg, nlpArray := client.nlpListToMsg(keywordArray)
 			if nlpArray == nil {
 				msgMake := "An unexpected error occurred while fetching data, please check console."
 				log.Println(msgMake)
-				cqfunction.CQSendMsg(FunctionRequest, msgMake)
+				cqfunction.CQSendMsg(fr, msgMake)
 				return
 			}
 			if len(nlpArray) == 0 {
@@ -77,15 +78,15 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 				if list.Total == -1 {
 					msgMake := "An unexpected error occurred while fetching data, please check console."
 					log.Println(msgMake)
-					cqfunction.CQSendMsg(FunctionRequest, msgMake)
+					cqfunction.CQSendMsg(fr, msgMake)
 					return
 				}
 				ListMsg, ListArray := client.listToMsg(list)
 				isHot = &isHotMusic{true, 0, nil}
-				client.sendMsg(FunctionRequest, ListMsg, ListArray, mt, isHot)
+				client.sendMsg(fr, ListMsg, ListArray, mt, isHot)
 			} else {
 				isHot = &isHotMusic{false, 0, nil}
-				client.sendMsg(FunctionRequest, nlpMsg, nlpArray, mt, isHot)
+				client.sendMsg(fr, nlpMsg, nlpArray, mt, isHot)
 			}
 		}
 	case 2:
@@ -99,14 +100,14 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 			log.Println(msgMake)
 		} else {
 			isHot = &isHotMusic{true, 1, &list.Total}
-			client.sendMsg(FunctionRequest, ListMsg, ListArray, nil, isHot)
+			client.sendMsg(fr, ListMsg, ListArray, nil, isHot)
 		}
 	case 3:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
 		if counter != 0 {
 			wc := new(waitingChan)
-			wc.FunctionRequest = *FunctionRequest
+			wc.FunctionRequest = *fr
 			wc.isTimeOut = false
 			waiting <- wc
 		}
@@ -115,32 +116,33 @@ func VTBMusic(FunctionRequest *botstruct.FunctionRequest, mt *msgType) {
 		log.Println("Known command:", mt.content)
 		list := client.GetVTBMusicDetail(mt.content)
 		var msgMake string
-		if list.Total == -1 {
+		switch list.Total {
+		case -1:
 			msgMake = "An unexpected error occurred while fetching data, please check console."
 			log.Println(msgMake)
-		} else if list.Total == 0 {
-			msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\nid:" + mt.content + "没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
-		} else {
+		case 0:
+			msgMake = "[CQ:at,qq=" + fr.SenderID + "]\nid:" + mt.content + "没有在VtbMusic上找到结果。获取使用帮助请发送vtbhelp"
+		default:
 			client.MusicList = list.Data
 			msgMake = client.getMusicDetailandCQCode(1)
 		}
-		cqfunction.CQSendMsg(FunctionRequest, msgMake)
+		cqfunction.CQSendMsg(fr, msgMake)
 	case 5:
 		log.SetPrefix("VTBMusic: ")
 		log.Println("Known command:", mt.content)
-		switch FunctionRequest.MsgType {
+		switch fr.MsgType {
 		case "private":
-			go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, help.VTBMusic, &FunctionRequest.BotConfig)
+			go cqfunction.CQSendPrivateMsg(fr.SenderID, help.VTBMusic, &fr.BotConfig)
 		case "group":
-			go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, help.VTBMusic, &FunctionRequest.BotConfig)
+			go cqfunction.CQSendGroupMsg(fr.GroupID, help.VTBMusic, &fr.BotConfig)
 		}
 	}
 }
 
-func (e *VTBMusicClient) listToMsg(list ...*VTBMusicList) (ListMsg *string, ListArray []GetVTBMusicListData) {
-	var q = make([]string, 0)
-	var listReturn = make([]GetVTBMusicListData, 0)
-	var c int = 1
+func (e *VTBMusicClient) listToMsg(list ...*VTBMusicList) (listMsg *string, listArray []GetVTBMusicListData) {
+	q := make([]string, 0)
+	listReturn := make([]GetVTBMusicListData, 0)
+	c := 1
 	for i := range list {
 		for j := range list[i].Data {
 			listReturn = append(listReturn, list[i].Data[j])
@@ -172,7 +174,7 @@ func (e *VTBMusicClient) getMusicDetail(index int) (info *VTBMusicInfo) {
 	return i
 }
 
-func (e *VTBMusicClient) nlpListToMsg(keywordArray []txc.KeywordsExtractionKeywords) (NLPMsg *string, NLPArray []GetVTBMusicListData) {
+func (e *VTBMusicClient) nlpListToMsg(keywordArray []txc.KeywordsExtractionKeywords) (nlpMsg *string, nlpArray []GetVTBMusicListData) {
 	list1 := e.GetMusicList(keywordArray[0].Word, "MusicName")
 	list2 := e.GetMusicList(keywordArray[0].Word, "VtbName")
 
@@ -182,8 +184,8 @@ func (e *VTBMusicClient) nlpListToMsg(keywordArray []txc.KeywordsExtractionKeywo
 		return &msgMake, nil
 	}
 
-	var nlpArray = make([]GetVTBMusicListData, 0)
-	var nlpMsgArray = make([]string, 0)
+	nlpArray = make([]GetVTBMusicListData, 0)
+	nlpMsgArray := make([]string, 0)
 
 	if list1.Total+list2.Total == 0 {
 		msgMake := "nope"
@@ -213,7 +215,6 @@ func (e *VTBMusicClient) nlpListToMsg(keywordArray []txc.KeywordsExtractionKeywo
 				}
 			}
 		}
-
 	}
 	for k := range nlpArray {
 		tmp := strconv.Itoa(k+1) + "," + nlpArray[k].VocalName + "-" + nlpArray[k].OriginName
@@ -223,76 +224,81 @@ func (e *VTBMusicClient) nlpListToMsg(keywordArray []txc.KeywordsExtractionKeywo
 	return &msg, nlpArray
 }
 
-func (e *VTBMusicClient) sendMsg(FunctionRequest *botstruct.FunctionRequest, ListMsg *string, ListArray []GetVTBMusicListData, MsgType *msgType, isHotMusic *isHotMusic) {
+func (e *VTBMusicClient) sendMsg(fr *botstruct.FunctionRequest, listMsg *string, listArray []GetVTBMusicListData, msgType *msgType, isHotMusic *isHotMusic) {
 	var msgMake string
 	var msgtoGroup string
-	lens := len(ListArray)
-	e.MusicList = ListArray
+	lens := len(listArray)
+	e.MusicList = listArray
 	do := func() {
 		counter++
 		w := new(waitingChan)
 		w.IsNewRequest = true
-		w.RequestSenderID = FunctionRequest.SenderID
-		w.FunctionRequest = *FunctionRequest
+		w.RequestSenderID = fr.SenderID
+		w.FunctionRequest = *fr
 		w.isTimeOut = false
 		waiting <- w
 		var client Client = e
-		go waitingFunc(client, FunctionRequest, &FunctionRequest.BotConfig)
+		go waitingFunc(client, fr, &fr.BotConfig)
 	}
 	if isHotMusic.is {
 		if isHotMusic.types != 1 {
-			msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\n《" + MsgType.content + "》没有在VtbMusic上找到结果。以下是VtbMusic的推荐:\n" + *ListMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
-			cqfunction.CQSendMsg(FunctionRequest, msgMake)
+			msgMake = "[CQ:at,qq=" + fr.SenderID + "]\n《" + msgType.content + "》没有在VtbMusic上找到结果。以下是VtbMusic的推荐:\n" + *listMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
+			cqfunction.CQSendMsg(fr, msgMake)
 			go do()
 		} else {
-			msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\nVTBMusic 当前已收录歌曲 " + strconv.Itoa(*isHotMusic.TotalQuantity) + "首。以下是VtbMusic的推荐:\n" + *ListMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
-			cqfunction.CQSendMsg(FunctionRequest, msgMake)
+			msgMake = "[CQ:at,qq=" + fr.SenderID + "]\nVTBMusic 当前已收录歌曲 " + strconv.Itoa(*isHotMusic.TotalQuantity) + "首。以下是VtbMusic的推荐:\n" + *listMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
+			cqfunction.CQSendMsg(fr, msgMake)
 			go do()
 		}
 	} else {
-		switch FunctionRequest.MsgType {
+		switch fr.MsgType {
 		case "private":
-			if lens == 1 {
+			switch lens {
+			case 1:
 				msgMake = e.getMusicDetailandCQCode(1)
-			} else if lens <= 200 {
-				msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\n《" + MsgType.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *ListMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
-				go do()
-			} else {
-				msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\n《" + MsgType.content + "》共找到多达" + strconv.Itoa(lens) + "个结果,建议您更换关键词重试,获取使用帮助请发送vtbhelp"
+			default:
+				if lens <= 200 {
+					msgMake = "[CQ:at,qq=" + fr.SenderID + "]\n《" + msgType.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
+					go do()
+				} else {
+					msgMake = "[CQ:at,qq=" + fr.SenderID + "]\n《" + msgType.content + "》共找到多达" + strconv.Itoa(lens) + "个结果,建议您更换关键词重试,获取使用帮助请发送vtbhelp"
+				}
 			}
-			go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, msgMake, &FunctionRequest.BotConfig)
+			go cqfunction.CQSendPrivateMsg(fr.SenderID, msgMake, &fr.BotConfig)
 		case "group":
 			if lens == 1 {
 				msgMake = e.getMusicDetailandCQCode(1)
-				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, msgMake, &FunctionRequest.BotConfig)
-			} else if lens <= 15 {
-				msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\n《" + MsgType.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *ListMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
-				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, msgMake, &FunctionRequest.BotConfig)
-				go do()
-			} else {
-				if lens <= 40 {
-					msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\n《" + MsgType.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *ListMsg + "\n━━━━━━━━━━━━━━\n请在原群聊发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
-					msgtoGroup = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\n《" + MsgType.content + "》共找到" + strconv.Itoa(lens) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信"
-					go cqfunction.CQSendPrivateMsg(FunctionRequest.SenderID, msgMake, &FunctionRequest.BotConfig)
-					do()
-				} else {
-					msgMake = "[CQ:at,qq=" + FunctionRequest.SenderID + "]\n《" + MsgType.content + "》共找到多达" + strconv.Itoa(lens) + "个结果,建议您更换关键词重试或私聊BOT获取完整列表,获取使用帮助请发送vtbhelp"
-					msgtoGroup = msgMake
-				}
-				go cqfunction.CQSendGroupMsg(FunctionRequest.GroupID, msgtoGroup, &FunctionRequest.BotConfig)
+				go cqfunction.CQSendGroupMsg(fr.GroupID, msgMake, &fr.BotConfig)
+				break
 			}
+			if lens <= 15 {
+				msgMake = "[CQ:at,qq=" + fr.SenderID + "]\n《" + msgType.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listMsg + "\n━━━━━━━━━━━━━━\n发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
+				go cqfunction.CQSendGroupMsg(fr.GroupID, msgMake, &fr.BotConfig)
+				go do()
+				break
+			}
+			if lens <= 40 {
+				msgMake = "[CQ:at,qq=" + fr.SenderID + "]\n《" + msgType.content + "》共找到" + strconv.Itoa(lens) + "个结果:\n" + *listMsg + "\n━━━━━━━━━━━━━━\n请在原群聊发送歌曲对应序号即可播放,获取使用帮助请发送vtbhelp"
+				msgtoGroup = "[CQ:at,qq=" + fr.SenderID + "]\n《" + msgType.content + "》共找到" + strconv.Itoa(lens) + "个结果。为防止打扰到他人，本消息采用私聊推送，请检查私信"
+				go cqfunction.CQSendPrivateMsg(fr.SenderID, msgMake, &fr.BotConfig)
+				do()
+			} else {
+				msgMake = "[CQ:at,qq=" + fr.SenderID + "]\n《" + msgType.content + "》共找到多达" + strconv.Itoa(lens) + "个结果,建议您更换关键词重试或私聊BOT获取完整列表,获取使用帮助请发送vtbhelp"
+				msgtoGroup = msgMake
+			}
+			go cqfunction.CQSendGroupMsg(fr.GroupID, msgtoGroup, &fr.BotConfig)
 		}
-
 	}
 }
 
-func (e *VTBMusicClient) getMusicCode(Info *VTBMusicInfo) string {
-	return fmt.Sprintf("[CQ:music,type=custom,url=https://vtbmusic.com/song?id=%s,audio=%s,title=%s,content=%s,image=%s]", Info.MusicID, Info.MusicURL, Info.MusicName, Info.MusicVocal, Info.Cover)
+func (e *VTBMusicClient) getMusicCode(info *VTBMusicInfo) string {
+	return fmt.Sprintf("[CQ:music,type=custom,url=https://vtbmusic.com/song?id=%s,audio=%s,title=%s,content=%s,image=%s]", info.MusicID, info.MusicURL, info.MusicName, info.MusicVocal, info.Cover)
 }
 
 func (e *VTBMusicClient) getMusicDetailandCQCode(index int) string {
 	return e.getMusicCode(e.getMusicDetail(index))
 }
+
 func (e *VTBMusicClient) musicListLen() int {
 	return len(e.MusicList)
 }

@@ -1,4 +1,4 @@
-module SMLKBOT
+module github.com/Ink-33/SMLKBOT
 
 go 1.15
 

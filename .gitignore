@@ -24,6 +24,7 @@ _testmain.go
 *.exe
 *.test
 *.prof
-*.yml
+.goreleaser.yml
+.goreleaser-scf.yml
 #Something private
 conf.json

@@ -1,10 +1,10 @@
 package smlkshell
 
 import (
-	"SMLKBOT/data/botstruct"
+	"github.com/Ink-33/SMLKBOT/data/botstruct"
 )
 
-//The format for SmlkShell command .
+// The format for SmlkShell command .
 type commandFormat func(*botstruct.FunctionRequest, []string)
 
 var commandMap = make(map[string]commandFormat)
@@ -15,4 +15,3 @@ func init() {
 	commandMap["gc"] = gc
 	commandMap["reload"] = reload
 }
-

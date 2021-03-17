@@ -1,10 +1,10 @@
 package bilibili
 
 import (
-	"SMLKBOT/data/botstruct"
+	"github.com/Ink-33/SMLKBOT/data/botstruct"
 )
 
-//Bilibili : The main function of bilibili
-func Bilibili(FunctionRequest *botstruct.FunctionRequest) {
-	Au2Card(FunctionRequest)
+// Bilibili : The main function of bilibili
+func Bilibili(fr *botstruct.FunctionRequest) {
+	Au2Card(fr)
 }

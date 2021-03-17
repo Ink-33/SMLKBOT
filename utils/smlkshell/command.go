@@ -1,36 +1,39 @@
 package smlkshell
 
 import (
-	"SMLKBOT/data/botstruct"
-	"SMLKBOT/utils/cqfunction"
 	"fmt"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/Ink-33/SMLKBOT/data/botstruct"
+	"github.com/Ink-33/SMLKBOT/utils/cqfunction"
 )
 
-//Compile
-var date, version, commit string = "DevBuild", "DevBuild", "DevBuild"
+// Compile
+var date, version, commit = "DevBuild", "DevBuild", "DevBuild"
 
-//IsSCF is the mark to judge whether SMLKBOT is running in SaaS mode.
+// IsSCF is the mark to judge whether SMLKBOT is running in SaaS mode.
 //	This variable should be set by using -ldflags while building.
-var IsSCF string = "no"
-var upTime string
+var (
+	IsSCF  = "no"
+	upTime string
+)
 
-//RoleHandler : Fetching user's role.
-func RoleHandler(FunctionRequest *botstruct.FunctionRequest) (role *botstruct.Role) {
+// RoleHandler : Fetching user's role.
+func RoleHandler(fr *botstruct.FunctionRequest) (role *botstruct.Role) {
 	role = new(botstruct.Role)
 	role.RoleName = "member"
 	role.RoleLevel = 0
-	for i := range FunctionRequest.MasterID {
-		if FunctionRequest.SenderID == FunctionRequest.MasterID[i].String() {
+	for i := range fr.MasterID {
+		if fr.SenderID == fr.MasterID[i].String() {
 			role.RoleLevel = 3
 			role.RoleName = "master"
 			return
 		}
 	}
-	if FunctionRequest.MsgType == "group" {
-		role.RoleName = FunctionRequest.Role
+	if fr.MsgType == "group" {
+		role.RoleName = fr.Role
 		switch role.RoleName {
 		case "owner":
 			role.RoleLevel = 2
@@ -45,12 +48,12 @@ func RoleHandler(FunctionRequest *botstruct.FunctionRequest) (role *botstruct.Ro
 	return
 }
 
-//ShellLog : Send execute result to QQ
+// ShellLog : Send execute result to QQ
 //	succeed
 //	deny
 //	disabled
 //	nofonud
-func ShellLog(FunctionRequest *botstruct.FunctionRequest, result string) {
+func ShellLog(fr *botstruct.FunctionRequest, result string) {
 	var msgMake string
 	switch result {
 	case "succeed":
@@ -60,63 +63,64 @@ func ShellLog(FunctionRequest *botstruct.FunctionRequest, result string) {
 	case "disabled":
 		msgMake = "$SmlkShell> disabled."
 	case "nofonud":
-		msgMake = fmt.Sprintf("$SmlkShell> %s: command not found", strings.Replace(FunctionRequest.Message, prefix, "", 1))
+		msgMake = fmt.Sprintf("$SmlkShell> %s: command not found", strings.Replace(fr.Message, prefix, "", 1))
 	default:
 		msgMake = result
 	}
 	if msgMake != "" {
-		cqfunction.CQSendMsg(FunctionRequest, msgMake)
+		cqfunction.CQSendMsg(fr, msgMake)
 	}
 }
 
-func ping(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
-	cost := time.Now().Unix() - FunctionRequest.TimeStamp
+func ping(fr *botstruct.FunctionRequest, msgArray []string) {
+	cost := time.Now().Unix() - fr.TimeStamp
 	if len(msgArray) != 1 {
-		ShellLog(FunctionRequest, "nofonud")
+		ShellLog(fr, "nofonud")
 		return
 	}
-	ShellLog(FunctionRequest, fmt.Sprintf("本次请求耗时:%d秒", cost))
+	ShellLog(fr, fmt.Sprintf("本次请求耗时:%d秒", cost))
 }
 
-func status(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
-	if RoleHandler(FunctionRequest).RoleLevel >= 0 {
+func status(fr *botstruct.FunctionRequest, msgArray []string) {
+	if RoleHandler(fr).RoleLevel >= 0 {
 		if len(msgArray) != 1 {
-			ShellLog(FunctionRequest, "nofonud")
+			ShellLog(fr, "nofonud")
 			return
 		}
 		msgMake := GetStatus()
-		ShellLog(FunctionRequest, msgMake)
+		ShellLog(fr, msgMake)
 	} else {
-		ShellLog(FunctionRequest, "deny")
+		ShellLog(fr, "deny")
 	}
 }
 
-func gc(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
-	if RoleHandler(FunctionRequest).RoleLevel >= 3 {
+func gc(fr *botstruct.FunctionRequest, msgArray []string) {
+	if RoleHandler(fr).RoleLevel >= 3 {
 		if len(msgArray) != 1 {
-			ShellLog(FunctionRequest, "nofonud")
+			ShellLog(fr, "nofonud")
 			return
 		}
 		runtime.GC()
-		ShellLog(FunctionRequest, "succeed")
+		ShellLog(fr, "succeed")
 	} else {
-		ShellLog(FunctionRequest, "deny")
-	}
-}
-func reload(FunctionRequest *botstruct.FunctionRequest, msgArray []string) {
-	if RoleHandler(FunctionRequest).RoleLevel == 3 {
-		if len(msgArray) != 1 {
-			ShellLog(FunctionRequest, "nofonud")
-			return
-		}
-		cqfunction.ConfigFile = cqfunction.ReadConfig()
-		ShellLog(FunctionRequest, "succeed")
-	} else {
-		ShellLog(FunctionRequest, "deny")
+		ShellLog(fr, "deny")
 	}
 }
 
-//GetStatus : Get a string for program status
+func reload(fr *botstruct.FunctionRequest, msgArray []string) {
+	if RoleHandler(fr).RoleLevel == 3 {
+		if len(msgArray) != 1 {
+			ShellLog(fr, "nofonud")
+			return
+		}
+		cqfunction.ConfigFile = cqfunction.ReadConfig()
+		ShellLog(fr, "succeed")
+	} else {
+		ShellLog(fr, "deny")
+	}
+}
+
+// GetStatus : Get a string for program status
 func GetStatus() string {
 	m := new(runtime.MemStats)
 	runtime.ReadMemStats(m)

@@ -1,17 +1,17 @@
 package music
 
-//Translate json to go by using https://www.sojson.com/json/json2go.html
+// Translate json to go by using https://www.sojson.com/json/json2go.html
 
-//GetVTBMusicList also can be used as GetVTBHotMusicList
+// GetVTBMusicList also can be used as GetVTBHotMusicList
 type GetVTBMusicList struct {
-	Total     int                `json:"total"`
+	Total     int                   `json:"total"`
 	Data      []GetVTBMusicListData `json:"data"`
-	Success   bool               `json:"success"`
-	ErrorCode int                `json:"errorCode"`
-	Msg       string             `json:"msg"`
+	Success   bool                  `json:"success"`
+	ErrorCode int                   `json:"errorCode"`
+	Msg       string                `json:"msg"`
 }
 
-//GetVTBMusicListData is used for json Unmarshal
+// GetVTBMusicListData is used for json Unmarshal
 type GetVTBMusicListData struct {
 	ID              string `json:"id"`
 	CreateTime      string `json:"createTime"`
@@ -42,8 +42,7 @@ type GetVTBMusicListData struct {
 	} `json:"vocalList"`
 }
 
-
-//GetVTBCDNList is used for json Unmarshal
+// GetVTBCDNList is used for json Unmarshal
 type GetVTBCDNList struct {
 	Total int `json:"total"`
 	Data  []struct {
@@ -59,24 +58,24 @@ type GetVTBCDNList struct {
 	Msg       string `json:"msg"`
 }
 
-//GetVTBMusicData is used for json Unmarshal
+// GetVTBMusicData is used for json Unmarshal
 type GetVTBMusicData struct {
 	*GetVTBMusicListData `json:"Data"`
-	Success           bool   `json:"Success"`
-	ErrorCode         int    `json:"ErrorCode"`
-	Msg               string `json:"Msg"`
+	Success              bool   `json:"Success"`
+	ErrorCode            int    `json:"ErrorCode"`
+	Msg                  string `json:"Msg"`
 }
 
-//GetVTBVtbsList is used for json Unmarshal
+// GetVTBVtbsList is used for json Unmarshal
 type GetVTBVtbsList struct {
-	Total     int           `json:"total"`
+	Total     int              `json:"total"`
 	Data      []GetVTBVtbsData `json:"data"`
-	Success   bool          `json:"success"`
-	ErrorCode int           `json:"errorCode"`
-	Msg       string        `json:"msg"`
+	Success   bool             `json:"success"`
+	ErrorCode int              `json:"errorCode"`
+	Msg       string           `json:"msg"`
 }
 
-//GetVTBVtbsData is used for json Unmarshal
+// GetVTBVtbsData is used for json Unmarshal
 type GetVTBVtbsData struct {
 	ID           string `json:"id"`
 	CreateTime   string `json:"createTime"`
@@ -95,7 +94,7 @@ type GetVTBVtbsData struct {
 	Introduce    string `json:"introduce"`
 }
 
-//VTBMusicInfo includes the info of a music.
+// VTBMusicInfo includes the info of a music.
 type VTBMusicInfo struct {
 	MusicName  string
 	MusicID    string
@@ -105,13 +104,13 @@ type VTBMusicInfo struct {
 	MusicCDN   string
 }
 
-//VTBMusicList includes the result of searching for musics.
+// VTBMusicList includes the result of searching for musics.
 type VTBMusicList struct {
 	Total int
 	Data  []GetVTBMusicListData
 }
 
-//VTBsList includes the result of searching for Vtbs.
+// VTBsList includes the result of searching for Vtbs.
 type VTBsList struct {
 	Total int
 	Data  []GetVTBVtbsData

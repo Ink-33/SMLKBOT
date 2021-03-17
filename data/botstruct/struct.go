@@ -4,7 +4,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-//MsgInfo includes some basic info about a message.
+// MsgInfo includes some basic info about a message.
 type MsgInfo struct {
 	TimeStamp int64
 	SenderID  string
@@ -16,7 +16,7 @@ type MsgInfo struct {
 	HMACSHA1  string
 }
 
-//BotConfig includes OneBot config.
+// BotConfig includes OneBot config.
 type BotConfig struct {
 	MasterID          []gjson.Result
 	HTTPAPIAddr       string
@@ -24,7 +24,7 @@ type BotConfig struct {
 	HTTPAPIPostSecret string
 }
 
-//FunctionRequest includes MsgInfo and BotConfig
+// FunctionRequest includes MsgInfo and BotConfig
 type FunctionRequest struct {
 	MsgInfo
 	BotConfig

@@ -1,19 +1,16 @@
 package music
 
 import (
-	"SMLKBOT/utils/cqfunction"
 	"encoding/json"
 	"log"
 	"runtime"
+
+	"github.com/Ink-33/SMLKBOT/utils/cqfunction"
 )
 
-/*
-Reverse proxy for VtbmusicAPI: https://api.vtbmusic.com:60006/v1/
-	This proxy is using Tencent Cloud API Gateway to record the usage.
-*/
-const vtbMusicAPIProxy string = "https://service-0pbekx7m-1252062863.gz.apigw.tencentcs.com/release/v1/"
+const vtbMusicAPI = "https://api.aqua.chat/v1/"
 
-var vtbMusicAPIMap map[string]string = make(map[string]string)
+var vtbMusicAPIMap = make(map[string]string)
 
 func init() {
 	vtbMusicAPIMap["MusicList"] = "GetMusicList"
@@ -23,17 +20,18 @@ func init() {
 	vtbMusicAPIMap["CDN"] = "GetCDNList"
 	vtbMusicAPIMap["HotList"] = "GetHotMusicList"
 }
-func (e *VTBMusicClient) getAPIAddr(APIName string) string {
-	return vtbMusicAPIProxy + vtbMusicAPIMap[APIName]
+
+func (e *VTBMusicClient) getAPIAddr(apiName string) string {
+	return vtbMusicAPI + vtbMusicAPIMap[apiName]
 }
 
-//GetMusicList : Get VTBMusic Detail Info.
+// GetMusicList : Get VTBMusic Detail Info.
 //	Method: MusicName,VtbName
-func (e *VTBMusicClient) GetMusicList(Keyword string, Method string) (List *VTBMusicList) {
+func (e *VTBMusicClient) GetMusicList(keyword string, method string) (list *VTBMusicList) {
 	ml := new(VTBMusicList)
 	s := make(map[string]string)
-	s["keyword"] = Keyword
-	switch Method {
+	s["keyword"] = keyword
+	switch method {
 	case "VtbName":
 		s["condition"] = "VocalName"
 	default:
@@ -70,12 +68,11 @@ func (e *VTBMusicClient) GetMusicList(Keyword string, Method string) (List *VTBM
 	ml.Total = decode.Total
 	ml.Data = decode.Data
 	return ml
-
 }
 
-//GetMusicCDN : Get VTBMusic CDN Detail Info
+// GetMusicCDN : Get VTBMusic CDN Detail Info
 func (e *VTBMusicClient) GetMusicCDN(keyword string) (cdn *GetVTBCDNList) {
-	//log.Println(keyword)
+	// log.Println(keyword)
 	s := make(map[string]string)
 	s["condition"] = "name"
 	s["keyword"] = keyword
@@ -89,7 +86,7 @@ func (e *VTBMusicClient) GetMusicCDN(keyword string) (cdn *GetVTBCDNList) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	//log.Println(string(p))
+	// log.Println(string(p))
 	result, err := cqfunction.WebPostJSONContent(e.getAPIAddr("CDN"), string(p))
 	if err != nil {
 		_, ok := err.(*cqfunction.TimeOutError)
@@ -109,12 +106,12 @@ func (e *VTBMusicClient) GetMusicCDN(keyword string) (cdn *GetVTBCDNList) {
 	return decode
 }
 
-//GetVTBsList : Get VTB Detail Info.
-func (e *VTBMusicClient) GetVTBsList(VtbsName string) (VList *VTBsList) {
+// GetVTBsList : Get VTB Detail Info.
+func (e *VTBMusicClient) GetVTBsList(vtbsName string) (vList *VTBsList) {
 	vl := new(VTBsList)
 	s := make(map[string]string)
 	s["condition"] = "ChineseName"
-	s["keyword"] = VtbsName
+	s["keyword"] = vtbsName
 	postjson := vtbSearchJSON{
 		Search:    s,
 		PageIndex: 1,
@@ -147,11 +144,11 @@ func (e *VTBMusicClient) GetVTBsList(VtbsName string) (VList *VTBsList) {
 	return vl
 }
 
-//GetVTBMusicDetail : Get music info by using music id.
-func (e *VTBMusicClient) GetVTBMusicDetail(VTBMusicID string) (MusicInfo *VTBMusicList) {
+// GetVTBMusicDetail : Get music info by using music id.
+func (e *VTBMusicClient) GetVTBMusicDetail(vtbMusicID string) (musicInfo *VTBMusicList) {
 	ml := new(VTBMusicList)
 	postjson := vtbMusicData{
-		MusicID: VTBMusicID,
+		MusicID: vtbMusicID,
 	}
 	p, err := json.Marshal(postjson)
 	if err != nil {
@@ -185,8 +182,8 @@ func (e *VTBMusicClient) GetVTBMusicDetail(VTBMusicID string) (MusicInfo *VTBMus
 	return ml
 }
 
-//GetHotMusicList : Get the hot music.
-func (e *VTBMusicClient) GetHotMusicList() (List *VTBMusicList) {
+// GetHotMusicList : Get the hot music.
+func (e *VTBMusicClient) GetHotMusicList() (list *VTBMusicList) {
 	ml := new(VTBMusicList)
 	postjson := vtbSearchJSON{
 		PageIndex: 1,
@@ -237,11 +234,13 @@ type vtbCDNJSON struct {
 	PageIndex int               `json:"pageIndex"`
 	PageRows  int               `json:"pageRows"`
 }
+
 type vtbSearchJSON struct {
 	Search    map[string]string `json:"search"`
 	PageIndex int               `json:"pageIndex"`
 	PageRows  int               `json:"pageRows"`
 }
+
 type vtbMusicData struct {
 	MusicID string `json:"id"`
 }

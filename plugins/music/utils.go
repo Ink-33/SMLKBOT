@@ -6,7 +6,7 @@ import (
 )
 
 func isNumber(str string) bool {
-	var result bool = false
+	result := false
 	reg := regexp.MustCompile("^[0-9]+$")
 	tmp := strings.Join(reg.FindAllString(str, 1), "")
 	if tmp != "" {

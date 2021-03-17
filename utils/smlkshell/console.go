@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-//ConsoleHandler : 处理console invoke
+// ConsoleHandler : 处理console invoke
 func ConsoleHandler() {
 	go func() {
 		for {
