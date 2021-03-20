@@ -27,7 +27,7 @@ func (e *VTBMusicClient) getAPIAddr(apiName string) string {
 
 // GetMusicList : Get VTBMusic Detail Info.
 //	Method: MusicName,VtbName
-func (e *VTBMusicClient) GetMusicList(keyword string, method string) (list *VTBMusicList) {
+func (e *VTBMusicClient) GetMusicList(keyword string, method string) (list *VTBMusicList, err error) {
 	ml := new(VTBMusicList)
 	s := make(map[string]string)
 	s["keyword"] = keyword
@@ -63,11 +63,11 @@ func (e *VTBMusicClient) GetMusicList(keyword string, method string) (list *VTBM
 	if err != nil {
 		ml.Total = -1
 		log.Println(err)
-		return ml
+		return ml, err
 	}
 	ml.Total = decode.Total
 	ml.Data = decode.Data
-	return ml
+	return ml, err
 }
 
 // GetMusicCDN : Get VTBMusic CDN Detail Info
@@ -145,7 +145,7 @@ func (e *VTBMusicClient) GetVTBsList(vtbsName string) (vList *VTBsList) {
 }
 
 // GetVTBMusicDetail : Get music info by using music id.
-func (e *VTBMusicClient) GetVTBMusicDetail(vtbMusicID string) (musicInfo *VTBMusicList) {
+func (e *VTBMusicClient) GetVTBMusicDetail(vtbMusicID string) (musicInfo *VTBMusicList, err error) {
 	ml := new(VTBMusicList)
 	postjson := vtbMusicData{
 		MusicID: vtbMusicID,
@@ -153,6 +153,8 @@ func (e *VTBMusicClient) GetVTBMusicDetail(vtbMusicID string) (musicInfo *VTBMus
 	p, err := json.Marshal(postjson)
 	if err != nil {
 		log.Fatalln(err)
+		ml.Total = -1
+		return ml, err
 	}
 
 	result, err := cqfunction.WebPostJSONContent(e.getAPIAddr("MusicData"), string(p))
@@ -169,21 +171,21 @@ func (e *VTBMusicClient) GetVTBMusicDetail(vtbMusicID string) (musicInfo *VTBMus
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		ml.Total = -1
-		return ml
+		return ml, err
 	}
 	if decode.GetVTBMusicListData != nil {
 		dataArray := make([]GetVTBMusicListData, 0)
 		dataArray = append(dataArray, *decode.GetVTBMusicListData)
 		ml.Data = dataArray
 		ml.Total = 1
-		return ml
+		return ml, nil
 	}
 	ml.Total = 0
-	return ml
+	return ml, nil
 }
 
 // GetHotMusicList : Get the hot music.
-func (e *VTBMusicClient) GetHotMusicList() (list *VTBMusicList) {
+func (e *VTBMusicClient) GetHotMusicList() (list *VTBMusicList, err error) {
 	ml := new(VTBMusicList)
 	postjson := vtbSearchJSON{
 		PageIndex: 1,
@@ -209,11 +211,11 @@ func (e *VTBMusicClient) GetHotMusicList() (list *VTBMusicList) {
 	err = json.Unmarshal(result, decode)
 	if err != nil {
 		ml.Total = -1
-		return ml
+		return ml, err
 	}
 	ml.Total = decode.Total
 	ml.Data = decode.Data
-	return ml
+	return ml, nil
 }
 
 func (cdn *GetVTBCDNList) match(keyword string) (addr string) {

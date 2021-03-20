@@ -7,31 +7,9 @@ import (
 	"github.com/Ink-33/SMLKBOT/data/botstruct"
 )
 
-// VTBMusicClient : VTBMusic点歌Client
-type VTBMusicClient struct {
-	MusicList []GetVTBMusicListData
-}
-
-// AMusicClient : AppleMusic点歌Client
-type AMusicClient struct{}
-
-// Client : 点歌Client
-type Client interface {
-	getMusicDetailandCQCode(int) string
-	musicListLen() int
-}
-
-// MsgType
-type msgType struct {
-	// Search Keyword
-	content string
-	ctype   int8
-}
-
 // MsgHandler : The message Handler of music plugin
 func MsgHandler(fr *botstruct.FunctionRequest) {
 	mt := new(msgType)
-	mt.content = ""
 	mt.ctype = 0
 	if strings.Contains(fr.Message, "CQ:") {
 		return
@@ -45,11 +23,8 @@ func MsgHandler(fr *botstruct.FunctionRequest) {
 	reg := regexp.MustCompile("^[0-9]+$")
 	mt.content = strings.Join(reg.FindAllString(fr.Message, 1), "")
 	if mt.content != "" {
-		if counter != 0 {
-			wc := new(waitingChan)
-			wc.FunctionRequest = *fr
-			wc.isTimeOut = false
-			waiting <- wc
+		if subscriber := eventBus.subscribers[fr.SenderID]; subscriber != nil {
+			subscriber.run(fr)
 		}
 	}
 }

@@ -28,3 +28,4 @@ _testmain.go
 .goreleaser-scf.yml
 #Something private
 conf.json
+*.bak

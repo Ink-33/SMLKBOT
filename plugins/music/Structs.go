@@ -1,5 +1,11 @@
 package music
 
+import (
+	"sync"
+
+	"github.com/Ink-33/SMLKBOT/data/botstruct"
+)
+
 // Translate json to go by using https://www.sojson.com/json/json2go.html
 
 // GetVTBMusicList also can be used as GetVTBHotMusicList
@@ -67,4 +73,37 @@ type VTBMusicList struct {
 type VTBsList struct {
 	Total int
 	Data  []GetVTBVtbsData
+}
+
+// EventBusSubcriber 点歌者信息
+type EventBusSubcriber struct {
+	run  func(*botstruct.FunctionRequest)
+	done chan struct{}
+}
+
+// EventBus 存储点歌信息
+type EventBus struct {
+	subscribers map[string]*EventBusSubcriber
+	lock        sync.RWMutex
+}
+
+// VTBMusicClient : VTBMusic点歌Client
+type VTBMusicClient struct {
+	MusicList []GetVTBMusicListData
+}
+
+// AMusicClient : AppleMusic点歌Client
+type AMusicClient struct{}
+
+// Client : 点歌Client
+type Client interface {
+	getMusicDetailandCQCode(int) string
+	musicListLen() int
+}
+
+// MsgType
+type msgType struct {
+	// Search Keyword
+	content string
+	ctype   int8
 }
