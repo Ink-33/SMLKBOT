@@ -1,12 +1,12 @@
 echo "Welcome to use SMLKBOT!"
 if [ "$1" == "TencentSCF" ]; then
     echo "Build SMLKBOT for Tencent SCF..."
-    flags="-s -w -X 'SMLKBOT/utils/smlkshell.date=$(date)' -X 'SMLKBOT/utils/smlkshell.version="DevBuild-SCF"' -X 'SMLKBOT/utils/smlkshell.commit="$(git rev-parse --short HEAD)"' -X 'SMLKBOT/utils/smlkshell.IsSCF="${1}"'"
+    flags="-s -w -X 'github.com/Ink-33/SMLKBOT/utils/smlkshell.date=$(date)' -X 'github.com/Ink-33/SMLKBOT/utils/smlkshell.version="DevBuild-SCF"' -X 'github.com/Ink-33/SMLKBOT/utils/smlkshell.commit="$(git rev-parse --short HEAD)"' -X 'github.com/Ink-33/SMLKBOT/utils/smlkshell.IsSCF="${1}"'"
     go build -ldflags "$flags" -o ./target/SMLKBOTSCF
     echo "Build succeed!"
 elif [ "$1" == "HTTP" ]; then
     echo "Build SMLKBOT for common"
-    flags="-s -w -X 'SMLKBOT/utils/smlkshell.date=$(date)' -X 'SMLKBOT/utils/smlkshell.commit="$(git rev-parse --short HEAD)"'"
+    flags="-s -w -X 'github.com/Ink-33/SMLKBOT/utils/smlkshell.date=$(date)' -X 'github.com/Ink-33/SMLKBOT/utils/smlkshell.commit="$(git rev-parse --short HEAD)"'"
     if [ "$2" == "win" ]; then
         GOOS=windows go build -ldflags "$flags" -o ./target/SMLKBOT-win.exe
         echo "Build succeed!"
